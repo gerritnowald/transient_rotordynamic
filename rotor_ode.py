@@ -76,8 +76,9 @@ d    = 1e-2*np.sqrt(cs/m)   # damping coefficient / Ns/m
 #                 rtol=1e-6, atol=1e-6 )
 
 # Jeffcott rotor
-y0 = - (m+mj)*g/cb
-q0  = [0, y0, 0, y0, 0, 0, 0, 0]    # initial conditions [displ. x, displ. y, speed x, speed y] (static equilibrium)
+y0j = - (m+mj)*g/cb
+y0m = y0j - m*g/cs
+q0  = [0, y0m, 0, y0j, 0, 0, 0, 0]    # initial conditions [displ. x, displ. y, speed x, speed y] (static equilibrium)
 res = solve_ivp(rotor_Jeffcott, [0, tmax], q0, args=(m, epsR, mj, cs, cb, d, arot, g),
                 t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6 )
