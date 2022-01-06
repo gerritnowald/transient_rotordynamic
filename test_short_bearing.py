@@ -8,36 +8,34 @@ This is a temporary script file.
 import numpy as np
 
 
-def kappa(X,Y):
-    if X<0:             # case 2a
+def tan(X,Y):
+    if X==0:            # case 2b1 (singularity)
+        if Y>0:             # case 2b1a
+            tan_kappa = 1e16
+        else:               # case 2b1b: Y<0
+            tan_kappa = -1e16
+    else:               # case 2b2: G<1
         tan_kappa = Y/X
-        cos_kappa = 1/np.sqrt(1+tan_kappa**2)
-        sin_kappa = tan_kappa/np.sqrt(1+tan_kappa**2)
-    else:               # case 2b: G<=1
-        if X==0:            # case 2b1 (singularity)
-            if Y>0:             # case 2b1a
-                tan_kappa = -1e16
-            else:               # case 2b1b: E<0
-                tan_kappa =  1e16
-        else:               # case 2b2: G<1
-            tan_kappa = Y/X
-        cos_kappa = - 1/np.sqrt(1+tan_kappa**2)
-        sin_kappa = - tan_kappa/np.sqrt(1+tan_kappa**2)
+    return tan_kappa
+
+def kappa(X,Y):
+    tan_kappa = tan(X,Y)
+    cos_kappa = (-1)**(X>0)*1/np.sqrt(1+tan_kappa**2)
+    sin_kappa = (-1)**(X>0)*tan_kappa/np.sqrt(1+tan_kappa**2)
     if sin_kappa/(1+cos_kappa) < 0:
         piS = np.pi
     else:
-        piS = 0
+        piS = 0   
     return sin_kappa, cos_kappa, piS
-
 
 def fun_short_bearing(eps,epsS,phiS,B2D):
 # journal bearing forces short bearing theory
-    E = 2*epsS # radial dimensionless speed
-    G = 2*phiS     # tangential dimensionless speed
-    if E==0 and G==0:   # only rotation
+    E = 2*epsS  # radial dimensionless speed
+    G = 2*phiS  # tangential dimensionless speed
+    if E==0 and G==0:   # case1: rotation only
         fr   = 2*eps**2/(1-eps**2)**2
         fphi = - 0.5*np.pi*eps/(1-eps**2)**1.5
-    else:               # rotation + squeeze
+    else:               # case2: rotation + squeeze
         sin_kappa, cos_kappa, piS = kappa(eps*(1-G),E)
         # integrals
         I1 = 2*eps*cos_kappa**3/(1-eps**2*cos_kappa**2)**2
@@ -49,7 +47,7 @@ def fun_short_bearing(eps,epsS,phiS,B2D):
     return np.array([fr, fphi])
 
     
-print(fun_short_bearing(0.7, 0, 0,  0.5))   # 1
+# print(fun_short_bearing(0.7, 0, 0,  0.5))   # 1
 print(fun_short_bearing(0.7, 0, 1,  0.5))   # 2a sin_kappa=0
 print(fun_short_bearing(0.7, 1, 1,  0.5))   # 2a
 print(fun_short_bearing(0.7, 1, 0.5, 0.5))  # 2b1a
