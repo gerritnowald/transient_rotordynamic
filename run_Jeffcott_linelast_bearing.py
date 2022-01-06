@@ -37,10 +37,11 @@ arot = 2*np.pi*fmax/tmax             # acceleration of rotor speed / rad/s**2 (r
 # functions
 
 def rotor_Jeffcott(t, q):
-    FB   = rd.bearing_lin_elast(q[[0,2]],cb)        # bearing forces
+    # FB   = rd.bearing_lin_elast(q[[0,2]],cb)        # bearing forces
+    FB   = np.array([ 0, 0 ])                       # bearing stiffness in C
     FU   = rd.unbalance_const_acc(t,eps,arot)       # unbalance forces
-    Fvec = np.array([ FB[0],FU[0],FB[1],FU[1] ])    # external forces
-    fvec = np.hstack(( np.zeros(4), Minv @ Fvec ))
+    Fvec = np.array([ FB[0], FU[0], FB[1], FU[1] ]) # external forces physical space
+    fvec = np.hstack(( np.zeros(4), Minv @ Fvec ))  # external forces state space
     return A @ q + fvec - gvec
 
 # -----------------------------------------------------------------------------
@@ -53,17 +54,21 @@ D = np.vstack(( np.hstack((  d*O, np.zeros((2,2)) )), np.hstack(( np.zeros((2,2)
 
 O = np.array([[1,-1], [-1,1]])
 C = np.vstack(( np.hstack(( cs*O, np.zeros((2,2)) )), np.hstack(( np.zeros((2,2)), cs*O )) ))
+C[0,0] += cb    # bearing stiffness x
+C[2,2] += cb    # bearing stiffness y
 
-A, Minv = rd.state_space(M,D,C)
-
-gvec = g*np.hstack(( np.zeros(6), np.array([1,1]) ))    # gravity
+A, Minv = rd.state_space(M,D,C)                             # state space matrix
+gvec    = g*np.hstack(( np.zeros(6), np.array([1,1]) ))     # gravity state space
 
 # -----------------------------------------------------------------------------
 # initial conditions (static equilibrium)
+# q0 = [xj, xm, yj, ym, xdj, xdm, ydj, ydm]
 
-y0j = - (m+mj)*g/cb
-y0m = y0j - m*g/cs
-q0  = [0, 0, y0j, y0m, 0, 0, 0, 0]    # [xj, xm, yj, ym, xdj, xdm, ydj, ydm]
+# y0j = - (m+mj)*g/cb
+# y0m = y0j - m*g/cs
+# q0  = [0, 0, y0j, y0m, 0, 0, 0, 0]    # analytical solution
+
+q0 = np.linalg.solve(A, gvec)   # only if bearing stiffness in C
 
 # -----------------------------------------------------------------------------
 # numerical integration
