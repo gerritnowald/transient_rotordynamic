@@ -62,7 +62,7 @@ plt.figure()
 # displacement over time
 plt.subplot(221)
 plt.plot(res.t, res.y[1]*1e3 )
-plt.title("displacement over time")
+plt.title("displacement")
 plt.xlabel("time / s")
 plt.ylabel("y / mm")
 plt.grid()

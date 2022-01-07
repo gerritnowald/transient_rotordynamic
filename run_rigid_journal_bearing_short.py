@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 run-up with constant rotational acceleration 
-of a rigid rotor in linear elastic bearings
+of a rigid rotor in journal bearings (analytical short bearing solution)
 
 Created on Jan 04 2022
 
@@ -22,30 +22,30 @@ g = 9.81    # gravitational acceleration
 # parameters
 
 m   = 0.1       # mass of rotor / kg
-eps = m*5e-6    # center of mass eccentricity / m (unbalance)
+eps = m*1e-6    # center of mass eccentricity / m (unbalance)
 
-B = 3.5e-3     # journal width / m
-D = 7e-3       # journal diameter / m
-C = 15e-6      # bearing gap / m
-eta = 1e-2     # dyn. oil viscosity / Ns/m^2
+B = 3.5e-3      # journal width / m
+D = 7e-3        # journal diameter / m
+C = 15e-6       # bearing gap / m
+eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
 tmax = 1                    # max. time of calculation / s
-fmax = 500                  # max rotational frequency / Hz
+fmax = 1000                 # max rotational frequency / Hz
 arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
 # functions
 
 def rotor_rigid(t, q):
-    FB = rd.bearing_journal_short(q,B,D,C,eta,arot*t)   # bearing forces
+    FB = 2*rd.bearing_journal_short(q,B,D,C,eta,arot*t)   # bearing forces
     FU = rd.unbalance_const_acc(t,eps,arot) # unbalance forces
     return np.hstack(( q[-2:],              # ode in state space formulation
         ( FB + FU)/m - np.array([0,g]) ))
 
 # -----------------------------------------------------------------------------
-# initial conditions (static equilibrium)
+# initial conditions [displ. x, displ. y, speed x, speed y]
 
-q0  = [0, 0, 0, 0]    # [displ. x, displ. y, speed x, speed y]
+q0  = np.zeros(4)
 
 # -----------------------------------------------------------------------------
 # numerical integration
@@ -53,7 +53,7 @@ q0  = [0, 0, 0, 0]    # [displ. x, displ. y, speed x, speed y]
 start_time = time.time()
 res = solve_ivp(rotor_rigid, [0, tmax], q0,
                 t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
-                rtol=1e-6, atol=1e-6 )
+                rtol=1e-6, atol=1e-6, method='BDF' )
 print(f"elapsed time: {time.time() - start_time} s")
 
 # -----------------------------------------------------------------------------
@@ -64,15 +64,15 @@ plt.figure()
 # displacement over time
 plt.subplot(221)
 plt.plot(res.t, np.sqrt(res.y[0]**2+res.y[1]**2)/C )
-plt.title("displacement over time")
+plt.title("journal eccentricity")
 plt.xlabel("time / s")
-plt.ylabel("eccentricity")
+plt.ylabel("epsilon")
 plt.grid()
 
 # phase diagram
 plt.subplot(222)
-plt.plot(res.y[0]*1e3, res.y[1]*1e3 )
-plt.title("orbit")
-plt.xlabel("x / mm")
-plt.ylabel("y / mm")
+plt.plot(res.y[0]/C, res.y[1]/C )
+plt.title("journal orbit")
+plt.xlabel("x/C")
+plt.ylabel("y/C")
 plt.grid()

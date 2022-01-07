@@ -82,7 +82,7 @@ def bearing_journal_short(q,B,D,C,eta,omega0):
     # dimensional forces transformed into absolute coordinates
     sin_gamma = y[2]/eps
     cos_gamma = y[0]/eps
-    return 2*0.25*D**3*B*eta/C**2*omega0*(B/D)**2*np.array([
+    return 0.25*D**3*B*eta/C**2*omega0*(B/D)**2*np.array([
         [-sin_gamma, cos_gamma],
         [ cos_gamma, sin_gamma]
         ]) @ journal_bearing_short(eps,epsS,phiS)
