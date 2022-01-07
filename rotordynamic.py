@@ -35,36 +35,36 @@ def bearing_lin_elast(q,cb):
 # -----------------------------------------------------------------------------
 # short bearing
 
-def kappa(X,Y):
+def alpha(X,Y):
     if X == 0:    # singularity
         if Y>0:
-            tan_kappa = 1e16
+            tan_alpha = 1e16
         else:
-            tan_kappa = -1e16
+            tan_alpha = -1e16
     else:
-        tan_kappa = Y/X
-    cos_kappa = (-1)**(X>0)*1/np.sqrt(1+tan_kappa**2)
-    sin_kappa = (-1)**(X>0)*tan_kappa/np.sqrt(1+tan_kappa**2)
-    # kappa = np.arctan2(Y,X)
-    # sin_kappa = - np.sin(kappa)
-    # cos_kappa = - np.cos(kappa)
-    if sin_kappa/(1+cos_kappa) < 0:
+        tan_alpha = Y/X
+    cos_alpha = (-1)**(X>0)*1/np.sqrt(1+tan_alpha**2)
+    sin_alpha = (-1)**(X>0)*tan_alpha/np.sqrt(1+tan_alpha**2)
+    # alpha = np.arctan2(Y,X)
+    # sin_alpha = - np.sin(alpha)
+    # cos_alpha = - np.cos(alpha)
+    if sin_alpha/(1+cos_alpha) < 0:
         piS = np.pi
     else:
         piS = 0   
-    return sin_kappa, cos_kappa, piS
+    return sin_alpha, cos_alpha, piS
 
-def  journal_bearing_short(eps,epsS,phiS):
+def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
     if epsS == 0 and phiS == 0:    # case1: rotation only
         fr   = 2*eps**2/(1-eps**2)**2
         fphi = - 0.5*np.pi*eps/(1-eps**2)**1.5
     else:                      # case2: rotation + squeeze
-        sin_kappa, cos_kappa, piS = kappa(eps*(1-2*phiS),2*epsS)
+        sin_alpha, cos_alpha, piS = alpha(eps*(1-2*phiS),2*epsS)
         # integrals
-        I1 = 2*eps*cos_kappa**3/(1-eps**2*cos_kappa**2)**2
-        I2 = - eps*sin_kappa*(1-(2-eps**2)*cos_kappa**2)/(1-eps**2)/(1-eps**2*cos_kappa**2)**2 + (piS + np.arctan(np.sqrt(1-eps**2)/eps/sin_kappa))/(1-eps**2)**1.5
-        I3 = - eps*sin_kappa*(4-eps**2*(1+(2+eps**2)*cos_kappa**2))/(1-eps**2)**2/(1-eps**2*cos_kappa**2)**2 + (piS + np.arctan(np.sqrt(1-eps**2)/eps/sin_kappa))*(2+eps**2)/(1-eps**2)**2.5
+        I1 = 2*eps*cos_alpha**3/(1-eps**2*cos_alpha**2)**2
+        I2 = - eps*sin_alpha*(1-(2-eps**2)*cos_alpha**2)/(1-eps**2)/(1-eps**2*cos_alpha**2)**2 + (piS + np.arctan(np.sqrt(1-eps**2)/eps/sin_alpha))/(1-eps**2)**1.5
+        I3 = - eps*sin_alpha*(4-eps**2*(1+(2+eps**2)*cos_alpha**2))/(1-eps**2)**2/(1-eps**2*cos_alpha**2)**2 + (piS + np.arctan(np.sqrt(1-eps**2)/eps/sin_alpha))*(2+eps**2)/(1-eps**2)**2.5
         # dimensionless forces
         fr   = I2*eps*(1-2*phiS) - 2*epsS*I1
         fphi = I1*eps*(1-2*phiS) + 2*epsS*(I2-I3)
@@ -74,18 +74,16 @@ def  journal_bearing_short(eps,epsS,phiS):
     return np.array([fr, fphi])
 
 def bearing_journal_short(q,B,D,C,eta,omega0):
-    DX, DY, VX, VY = q
-    offset = 1e-10
+    # q = [x, y, xd, yd]
     # kinematics
-    omega0 = np.abs(omega0) + offset    # always positive
-    y = np.array([DX/C, VX/(C*omega0), DY/C, VY/(C*omega0)])
-    eps  = np.sqrt( y[0]**2 + y[2]**2 ) + offset    # no singularity
-    epsS = (y[0]*y[1] + y[2]*y[3])/eps
-    phiS = (y[0]*y[3] - y[2]*y[1])/eps**2
+    offset = 1e-10  # against singularities
+    omega0 = np.abs(omega0) + offset
+    eps    = np.sqrt( np.sum(q[0:2]**2) )/C + offset
+    epsS   = q[0:2] @ q[2:]/C**2/omega0/eps
+    phiS   = (q[0]*q[3] - q[1]*q[2])/C**2/omega0/eps**2
+    cos_theta, sin_theta = q[0:2]/C/eps
     # dimensional forces transformed into absolute coordinates
-    sin_gamma = y[2]/eps
-    cos_gamma = y[0]/eps
-    return 0.25*D**3*B*eta/C**2*omega0*(B/D)**2*np.array([
-        [-sin_gamma, cos_gamma],
-        [ cos_gamma, sin_gamma]
-        ]) @ journal_bearing_short(eps,epsS,phiS)
+    return 0.25*D**3*B*eta/C**2*omega0*np.array([
+        [-sin_theta, cos_theta],
+        [ cos_theta, sin_theta]
+        ]) @ short_bearing_forces(eps,epsS,phiS)*(B/D)**2
