@@ -10,6 +10,12 @@ Created on Wed Jan  5 16:30:25 2022
 import numpy as np
 
 # -----------------------------------------------------------------------------
+# math
+
+def cos_sin(q):                     # q = [x,y]
+    return q/np.sqrt(np.sum(q**2))  # [cos, sin]
+
+# -----------------------------------------------------------------------------
 # rotor
 
 def unbalance_const_acc(t,eps,arot):
@@ -35,21 +41,16 @@ def bearing_lin_elast(q,cb):
 # -----------------------------------------------------------------------------
 # short bearing
 
-def alpha(X,Y):
-    alpha = np.arctan2(Y,X)
-    sin_alpha = - np.sin(alpha)
-    cos_alpha = - np.cos(alpha)
-    piS = (sin_alpha/(1+cos_alpha) < 0)*np.pi 
-    return sin_alpha, cos_alpha, piS
-
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
     if epsS == 0 and phiS == 0:    # case1: rotation only
         fr   = 2*eps**2/(1-eps**2)**2
         fphi = - 0.5*np.pi*eps/(1-eps**2)**1.5
     else:                      # case2: rotation + squeeze
-        sin_alpha, cos_alpha, piS = alpha(eps*(1-2*phiS),2*epsS)
+        cos_alpha, sin_alpha = cos_sin(np.array([eps*(1-2*phiS),2*epsS]))
+        cos_alpha, sin_alpha = - cos_alpha, - sin_alpha     # needs to be corrected
         # integrals
+        piS = (sin_alpha/(1+cos_alpha) < 0)*np.pi
         I1 = 2*eps*cos_alpha**3/(1-eps**2*cos_alpha**2)**2
         I2 = - eps*sin_alpha*(1-(2-eps**2)*cos_alpha**2)/(1-eps**2)/(1-eps**2*cos_alpha**2)**2 + (piS + np.arctan(np.sqrt(1-eps**2)/eps/sin_alpha))/(1-eps**2)**1.5
         I3 = - eps*sin_alpha*(4-eps**2*(1+(2+eps**2)*cos_alpha**2))/(1-eps**2)**2/(1-eps**2*cos_alpha**2)**2 + (piS + np.arctan(np.sqrt(1-eps**2)/eps/sin_alpha))*(2+eps**2)/(1-eps**2)**2.5
@@ -63,15 +64,14 @@ def short_bearing_forces(eps,epsS,phiS):
 
 def bearing_journal_short(q,B,D,C,eta,omega0):
     # state vector q = [x, y, xd, yd]
-    d = q[0:2]  # journal displacements [x, y]
-    v = q[2:]   # journal speeds [xd, yd]
-    # kinematics
-    offset = 1e-10  # against singularities
+    offset = 1e-10      # against singularities
     omega0 = np.abs(omega0) + offset
-    eps    = np.sqrt( np.sum(d**2) )/C + offset
-    epsS   = d@v/C**2/omega0/eps
-    phiS   = (d[0]*v[1] - d[1]*v[0])/C**2/omega0/eps**2
-    cos_theta, sin_theta = d/C/eps
+    d = q[0:2]/C        # journal displacements [x, y]
+    v = q[2:]/C/omega0  # journal speeds [xd, yd]
+    eps  = np.sqrt(np.sum(d**2)) + offset
+    epsS = d@v/eps
+    phiS = np.cross(d,v)/eps**2
+    cos_theta, sin_theta = d/eps
     # dimensional forces transformed into absolute coordinates
     return 0.25*D**3*B*eta/C**2*omega0*np.array([
         [-sin_theta, cos_theta],

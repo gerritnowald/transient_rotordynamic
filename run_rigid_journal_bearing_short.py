@@ -30,7 +30,7 @@ C = 15e-6       # bearing gap / m
 eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
 tmax = 1                    # max. time of calculation / s
-fmax = 1000                 # max rotational frequency / Hz
+fmax = 700                 # max rotational frequency / Hz
 arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
