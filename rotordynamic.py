@@ -65,14 +65,16 @@ def short_bearing_forces(eps,epsS,phiS):
     return np.array([fr, fphi])
 
 def bearing_journal_short(q,B,D,C,eta,omega0):
-    # q = [x, y, xd, yd]
+    # state vector q = [x, y, xd, yd]
+    d = q[0:2]  # journal displacements [x, y]
+    v = q[2:]   # journal speeds [xd, yd]
     # kinematics
     offset = 1e-10  # against singularities
     omega0 = np.abs(omega0) + offset
-    eps    = np.sqrt( np.sum(q[0:2]**2) )/C + offset
-    epsS   = q[0:2] @ q[2:]/C**2/omega0/eps
-    phiS   = (q[0]*q[3] - q[1]*q[2])/C**2/omega0/eps**2
-    cos_theta, sin_theta = q[0:2]/C/eps
+    eps    = np.sqrt( np.sum(d**2) )/C + offset
+    epsS   = d@v/C**2/omega0/eps
+    phiS   = (d[0]*v[1] - d[1]*v[0])/C**2/omega0/eps**2
+    cos_theta, sin_theta = d/C/eps
     # dimensional forces transformed into absolute coordinates
     return 0.25*D**3*B*eta/C**2*omega0*np.array([
         [-sin_theta, cos_theta],
