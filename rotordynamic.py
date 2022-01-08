@@ -36,18 +36,9 @@ def bearing_lin_elast(q,cb):
 # short bearing
 
 def alpha(X,Y):
-    if X == 0:    # singularity
-        if Y>0:
-            tan_alpha = 1e16
-        else:
-            tan_alpha = -1e16
-    else:
-        tan_alpha = Y/X
-    cos_alpha = (-1)**(X>0)*1/np.sqrt(1+tan_alpha**2)
-    sin_alpha = (-1)**(X>0)*tan_alpha/np.sqrt(1+tan_alpha**2)
-    # alpha = np.arctan2(Y,X)
-    # sin_alpha = - np.sin(alpha)
-    # cos_alpha = - np.cos(alpha)
+    alpha = np.arctan2(Y,X)
+    sin_alpha = - np.sin(alpha)
+    cos_alpha = - np.cos(alpha)
     if sin_alpha/(1+cos_alpha) < 0:
         piS = np.pi
     else:
