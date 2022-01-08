@@ -43,10 +43,10 @@ def bearing_lin_elast(q,cb):
 
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
-    if epsS == 0 and phiS == 0:    # case1: rotation only
+    if epsS == 0 and phiS == 0:    # rotation only
         fr   = 2*eps**2/(1-eps**2)**2
         fphi = - 0.5*np.pi*eps/(1-eps**2)**1.5
-    else:                      # case2: rotation + squeeze
+    else:                      # rotation + squeeze
         cos_alpha, sin_alpha = cos_sin(np.array([eps*(1-2*phiS),2*epsS]))
         cos_alpha, sin_alpha = - cos_alpha, - sin_alpha     # needs to be corrected
         # integrals
