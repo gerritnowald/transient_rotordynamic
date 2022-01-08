@@ -39,10 +39,7 @@ def alpha(X,Y):
     alpha = np.arctan2(Y,X)
     sin_alpha = - np.sin(alpha)
     cos_alpha = - np.cos(alpha)
-    if sin_alpha/(1+cos_alpha) < 0:
-        piS = np.pi
-    else:
-        piS = 0   
+    piS = (sin_alpha/(1+cos_alpha) < 0)*np.pi 
     return sin_alpha, cos_alpha, piS
 
 def short_bearing_forces(eps,epsS,phiS):
