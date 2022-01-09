@@ -30,7 +30,7 @@ d   = 1e-2*np.sqrt(cs*m)     # damping coefficient / Ns/m (modal damping)
 BB = 3.5e-3     # journal width / m
 DB = 7e-3       # journal diameter / m
 CB = 15e-6      # bearing gap / m
-eta = 1e-2     # dyn. oil viscosity / Ns/m^2
+eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
 tmax = 1                    # max. time of calculation / s
 fmax = 500                  # max rotational frequency / Hz
