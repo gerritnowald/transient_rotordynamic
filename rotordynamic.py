@@ -48,7 +48,7 @@ def short_bearing_forces(eps,epsS,phiS):
         fphi = - 0.5*np.pi*eps/(1-eps**2)**1.5
     else:                      # rotation + squeeze
         cos_alpha, sin_alpha = cos_sin(np.array([2*epsS, eps*(1-2*phiS)]))
-        # cos_alpha, sin_alpha = - sin_alpha, - cos_alpha     # needs to be corrected
+        cos_alpha, sin_alpha = - sin_alpha, - cos_alpha     # needs to be corrected
         # integrals
         angle = np.arctan2(np.sqrt(1-eps**2),eps*sin_alpha)
         I1 = 2*eps*cos_alpha**3/(1-eps**2*cos_alpha**2)**2
