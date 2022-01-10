@@ -50,8 +50,7 @@ def bearing_lin_elast(q,cb):
 #         cos_alpha, sin_alpha = cos_sin(np.array([2*epsS, eps*(1-2*phiS)]))
 #         cos_alpha, sin_alpha = - sin_alpha, - cos_alpha     # needs to be corrected
 #         # integrals
-#         angle = np.arctan2(np.sqrt(1-eps**2),eps*sin_alpha)     # old correct version
-#         # angle = np.arctan2(np.sqrt(1-eps**2),-eps*cos_alpha)
+#         angle = np.arctan2(np.sqrt(1-eps**2),eps*sin_alpha)
 #         I1 = 2*eps*cos_alpha**3/(1-eps**2*cos_alpha**2)**2
 #         I2 = - eps*sin_alpha*(1-(2-eps**2)*cos_alpha**2)/(1-eps**2)/(1-eps**2*cos_alpha**2)**2 + angle/(1-eps**2)**1.5
 #         I3 = - eps*sin_alpha*(4-eps**2*(1+(2+eps**2)*cos_alpha**2))/(1-eps**2)**2/(1-eps**2*cos_alpha**2)**2 + angle/(1-eps**2)**2.5*(2+eps**2)
@@ -63,25 +62,19 @@ def bearing_lin_elast(q,cb):
 
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
-    vs = np.sqrt(epsS**2+(eps*(phiS-0.5))**2)
-    # alpha = np.arctan2(-eps*(phiS-0.5), epsS)
-    alpha = np.arctan2(eps*(1-2*phiS), 2*epsS)
-    if np.cos(alpha)>=0:
-        delta = 1
-    elif np.cos(alpha)<0:
-        delta = -1
-    A = (eps+np.sin(alpha))/(1+eps*np.sin(alpha))
-    B = (eps-np.sin(alpha))/(1-eps*np.sin(alpha))
+    vs = - np.sqrt(epsS**2+(eps*(phiS-0.5))**2)
+    cos_alpha, sin_alpha = cos_sin(np.array([epsS, eps*(0.5-phiS)]))
+    delta = (-1)**(cos_alpha<0)
+    A = (eps+sin_alpha)/(1+eps*sin_alpha)
+    B = (eps-sin_alpha)/(1-eps*sin_alpha)
     # integrals
-    I001 = (np.arccos(-delta*A)+np.arccos(-delta*B))/np.sqrt(1-eps**2)
-    I023 = 1/(2*(1-eps**2)**2)*((1+2*eps**2)*I001+2*eps*np.cos(alpha)*(3+(2-5*eps**2)*(np.sin(alpha))**2)/(1-eps**2*(np.sin(alpha))**2)**2)
-    I113 = -2*eps*(np.sin(alpha))**3/(1-eps**2*(np.sin(alpha))**2)**2
-    I203 = 1/(2*(1-eps**2))*(I001+2*eps*np.cos(alpha)*(1-(2-eps**2)*(np.sin(alpha))**2)/(1-eps**2*(np.sin(alpha))**2)**2 )
-    # Impedanz-Komponenten (Kurzlager)
-    Wr   = 2*(I023*np.cos(alpha)-I113*np.sin(alpha))
-    Wphi = 2*(I113*np.cos(alpha)-I203*np.sin(alpha))
-    fr   =  vs*Wr        # Vorzeichen aus Definition des Koordinatensystems
-    fphi = -vs*Wphi
+    I001 = (np.arccos(-delta*A) + np.arccos(-delta*B))/np.sqrt(1-eps**2)
+    I023 = 1/(2*(1-eps**2)**2)*((1+2*eps**2)*I001 + 2*eps*cos_alpha*(3+(2-5*eps**2)*sin_alpha**2)/(1-eps**2*sin_alpha**2)**2)
+    I113 = -2*eps*sin_alpha**3/(1-eps**2*sin_alpha**2)**2
+    I203 = 1/(2*(1-eps**2))*(I001 + 2*eps*cos_alpha*(1-(2-eps**2)*sin_alpha**2)/(1-eps**2*sin_alpha**2)**2)
+    # dimensionless forces
+    fr   = 2*vs*(I023*cos_alpha - I113*sin_alpha)
+    fphi = 2*vs*(I113*cos_alpha - I203*sin_alpha)
     return np.array([fr, fphi])
 
 def bearing_journal_short(q,B,D,C,eta,omega0):
@@ -93,9 +86,9 @@ def bearing_journal_short(q,B,D,C,eta,omega0):
     eps  = np.sqrt(np.sum(d**2)) + offset
     epsS = d@v/eps
     phiS = np.cross(d,v)/eps**2
-    cos_theta, sin_theta = d/eps
+    cos_delta, sin_delta = d/eps
     # dimensional forces transformed into absolute coordinates
     return 0.25*D**3*B*eta/C**2*omega0*np.array([
-        [ - cos_theta, -sin_theta ],
-        [ - sin_theta,  cos_theta ]
+        [ cos_delta, -sin_delta ],
+        [ sin_delta,  cos_delta ]
         ]) @ short_bearing_forces(eps,epsS,phiS)*(B/D)**2
