@@ -58,12 +58,8 @@ def short_bearing_forces(eps,epsS,phiS):
         # dimensionless forces
         fr   = I2*eps*(1-2*phiS) - 2*epsS*I1
         fphi = I1*eps*(1-2*phiS) + 2*epsS*(I2-I3)
-        # forces fr and fphi are switched! correct:
-        # fr	--> fphi
-        # fphi	-->	-fr
+        fr, fphi = - fphi, fr   # forces fr and fphi are switched!
     return np.array([fr, fphi])
-
-# print(short_bearing_forces(0.7,5,2) )
 
 def bearing_journal_short(q,B,D,C,eta,omega0):
     # state vector q = [x, y, xd, yd]
@@ -77,6 +73,6 @@ def bearing_journal_short(q,B,D,C,eta,omega0):
     cos_theta, sin_theta = d/eps
     # dimensional forces transformed into absolute coordinates
     return 0.25*D**3*B*eta/C**2*omega0*np.array([
-        [-sin_theta, cos_theta],
-        [ cos_theta, sin_theta]
+        [ - cos_theta, -sin_theta ],
+        [ - sin_theta,  cos_theta ]
         ]) @ short_bearing_forces(eps,epsS,phiS)*(B/D)**2

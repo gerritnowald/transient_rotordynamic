@@ -7,8 +7,11 @@ Created on Mon Jan 10 15:33:04 2022
 
 import numpy as np
 
+def cos_sin(q):                       # q = [x,y]
+    return q/np.sqrt(np.sum(q**2))    # [cos, sin]
 
 def short_bearing_forces(eps,epsS,phiS):
+# journal bearing forces short bearing theory
     vs = np.sqrt(epsilonS**2+(epsilon*(phiS-0.5))**2)
     alpha = np.arctan2(-epsilon*(phiS-0.5), epsilonS)
     if np.cos(alpha)>=0:

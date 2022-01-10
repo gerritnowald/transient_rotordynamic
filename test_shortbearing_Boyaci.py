@@ -27,9 +27,7 @@ def short_bearing_forces(eps,epsS,phiS):
         # dimensionless forces
         fr   = I2*eps*(1-2*phiS) - 2*epsS*I1
         fphi = I1*eps*(1-2*phiS) + 2*epsS*(I2-I3)
-        # forces fr and fphi are switched! correct:
-        # fr	--> fphi
-        # fphi	-->	-fr
+        fr, fphi = - fphi, fr   # forces fr and fphi are switched!
     return np.array([fr, fphi])
 
 epsilon  = 0.9
