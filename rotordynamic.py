@@ -41,25 +41,6 @@ def bearing_lin_elast(q,cb):
 # -----------------------------------------------------------------------------
 # short bearing
 
-# def short_bearing_forces(eps,epsS,phiS):
-# # journal bearing forces short bearing theory
-#     if epsS == 0 and phiS == 0:    # rotation only
-#         fr   = 2*eps**2/(1-eps**2)**2
-#         fphi = - 0.5*np.pi*eps/(1-eps**2)**1.5
-#     else:                      # rotation + squeeze
-#         cos_alpha, sin_alpha = cos_sin(np.array([2*epsS, eps*(1-2*phiS)]))
-#         cos_alpha, sin_alpha = - sin_alpha, - cos_alpha     # needs to be corrected
-#         # integrals
-#         angle = np.arctan2(np.sqrt(1-eps**2),eps*sin_alpha)
-#         I1 = 2*eps*cos_alpha**3/(1-eps**2*cos_alpha**2)**2
-#         I2 = - eps*sin_alpha*(1-(2-eps**2)*cos_alpha**2)/(1-eps**2)/(1-eps**2*cos_alpha**2)**2 + angle/(1-eps**2)**1.5
-#         I3 = - eps*sin_alpha*(4-eps**2*(1+(2+eps**2)*cos_alpha**2))/(1-eps**2)**2/(1-eps**2*cos_alpha**2)**2 + angle/(1-eps**2)**2.5*(2+eps**2)
-#         # dimensionless forces
-#         fr   = I2*eps*(1-2*phiS) - 2*epsS*I1
-#         fphi = I1*eps*(1-2*phiS) + 2*epsS*(I2-I3)
-#         fr, fphi = - fphi, fr   # forces fr and fphi are switched!
-#     return np.array([fr, fphi])
-
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
     vs = - np.sqrt(epsS**2+(eps*(phiS-0.5))**2)
