@@ -65,7 +65,7 @@ def bearing_journal_short(q,B,D,C,eta,omega0):
     d = q[0:2]/C        # journal displacements [x, y]
     v = q[2:]/C/omega0  # journal speeds [xd, yd]
     eps  = np.sqrt(np.sum(d**2)) + offset
-    epsS = d@v/eps
+    epsS = d @ v/eps
     phiS = np.cross(d,v)/eps**2
     cos_delta, sin_delta = d/eps
     # dimensional forces transformed into absolute coordinates

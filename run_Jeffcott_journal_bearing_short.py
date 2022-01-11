@@ -79,7 +79,7 @@ print(f"elapsed time: {time.time() - start_time} s")
 plt.figure()
 
 # displacement over time
-plt.subplot(221)
+plt.subplot(121)
 plt.plot(res.t, np.sqrt(res.y[0]**2+res.y[2]**2)/CB )
 plt.title("journal eccentricity")
 plt.xlabel("time / s")
@@ -87,7 +87,7 @@ plt.ylabel("epsilon")
 plt.grid()
 
 # phase diagram
-plt.subplot(222)
+plt.subplot(122)
 plt.plot(res.y[0]/CB, res.y[2]/CB )
 plt.title("journal orbit")
 plt.xlabel("x/C")
