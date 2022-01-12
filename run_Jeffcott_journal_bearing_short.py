@@ -76,20 +76,45 @@ print(f"elapsed time: {time.time() - start_time} s")
 # -----------------------------------------------------------------------------
 # plot
 
+plt.close('all')
+
 plt.figure()
 
 # displacement over time
-plt.subplot(121)
+plt.subplot(221)
 plt.plot(res.t, np.sqrt(res.y[0]**2+res.y[2]**2)/CB )
 plt.title("journal eccentricity")
 plt.xlabel("time / s")
 plt.ylabel("epsilon")
+plt.ylim((0, 1))
 plt.grid()
 
 # phase diagram
-plt.subplot(122)
+angle = np.linspace(0,2*np.pi,100)
+plt.subplot(222)
 plt.plot(res.y[0]/CB, res.y[2]/CB )
+plt.plot(np.cos(angle), np.sin(angle), color='k' )
 plt.title("journal orbit")
 plt.xlabel("x/C")
 plt.ylabel("y/C")
+plt.axis('equal')
 plt.grid()
+
+# horiz. displacement disc
+plt.subplot(223)
+plt.plot(res.t, res.y[1]*1e3 )
+plt.title("displacement disc")
+plt.xlabel("time / s")
+plt.ylabel("x / mm")
+plt.grid()
+
+# vert. displacement disc
+plt.subplot(224)
+plt.plot(res.t, res.y[3]*1e3 )
+plt.title("displacement disc")
+plt.xlabel("time / s")
+plt.ylabel("y / mm")
+plt.grid()
+
+plt.tight_layout()
+plt.show()

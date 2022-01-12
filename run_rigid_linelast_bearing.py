@@ -57,10 +57,12 @@ print(f"elapsed time: {time.time() - start_time} s")
 # -----------------------------------------------------------------------------
 # plot
 
+plt.close('all')
+
 plt.figure()
 
 # displacement over time
-plt.subplot(221)
+plt.subplot(121)
 plt.plot(res.t, res.y[1]*1e3 )
 plt.title("displacement")
 plt.xlabel("time / s")
@@ -68,9 +70,13 @@ plt.ylabel("y / mm")
 plt.grid()
 
 # phase diagram
-plt.subplot(222)
+plt.subplot(122)
 plt.plot(res.y[0]*1e3, res.y[1]*1e3 )
 plt.title("orbit")
 plt.xlabel("x / mm")
 plt.ylabel("y / mm")
+plt.axis('equal')
 plt.grid()
+
+plt.tight_layout()
+plt.show()
