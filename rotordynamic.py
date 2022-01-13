@@ -8,12 +8,27 @@ Created on Wed Jan  5 16:30:25 2022
 """
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 # -----------------------------------------------------------------------------
 # math
 
-def cos_sin(q):                       # q = [x,y]
+def cos_sin(q):                       # q = np.array([x,y])
     return q/np.sqrt(np.sum(q**2))    # [cos, sin]
+
+def plot_circ( R=1, C=(0,0), color='k', points=50 ):
+    angle = np.linspace(0, 2*np.pi, points)
+    x = C[0] + R*np.cos(angle)
+    y = C[1] + R*np.sin(angle)
+    plt.plot(x,y, color=color )
+    plt.axis('equal')
+    
+def state_space(M,D,C):
+    Minv = np.linalg.inv(M)
+    A = np.vstack((      # state space matrix
+        np.hstack(( np.zeros(np.shape(M)), np.eye(np.shape(M)[1]) )),
+        np.hstack(( - Minv @ C, - Minv @ D )) ))
+    return A, Minv
 
 # -----------------------------------------------------------------------------
 # rotor
@@ -24,13 +39,6 @@ def unbalance_const_acc(t,eps,arot):
     return np.array([    # horizontal, vertical unbalance force
         eps*( arot*np.cos(alpha) - alphad**2*np.sin(alpha) ) ,
         eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) ) ])
-
-def state_space(M,D,C):
-    Minv = np.linalg.inv(M)
-    A = np.vstack((      # state space matrix
-        np.hstack(( np.zeros(np.shape(M)), np.eye(np.shape(M)[1]) )),
-        np.hstack(( - Minv @ C, - Minv @ D )) ))
-    return A, Minv
 
 # -----------------------------------------------------------------------------
 # linear elastic bearing
@@ -43,6 +51,9 @@ def bearing_lin_elast(q,cb):
 
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
+# Vrande, van de, B. L. (2001). Nonlinear dynamics of elementary rotor systems 
+# with compliant plain journal bearings. Technische Universiteit Eindhoven.
+# https://doi.org/10.6100/IR550147
     vs = - np.sqrt(epsS**2+(eps*(phiS-0.5))**2)
     cos_alpha, sin_alpha = cos_sin(np.array([epsS, eps*(0.5-phiS)]))
     delta = (-1)**(cos_alpha<0)

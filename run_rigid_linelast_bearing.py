@@ -69,7 +69,7 @@ plt.xlabel("time / s")
 plt.ylabel("y / mm")
 plt.grid()
 
-# phase diagram
+# orbit
 plt.subplot(122)
 plt.plot(res.y[0]*1e3, res.y[1]*1e3 )
 plt.title("orbit")

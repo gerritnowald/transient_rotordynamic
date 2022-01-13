@@ -80,7 +80,7 @@ plt.close('all')
 
 plt.figure()
 
-# displacement over time
+# eccentricity over time
 plt.subplot(221)
 plt.plot(res.t, np.sqrt(res.y[0]**2+res.y[2]**2)/CB )
 plt.title("journal eccentricity")
@@ -89,15 +89,13 @@ plt.ylabel("epsilon")
 plt.ylim((0, 1))
 plt.grid()
 
-# phase diagram
-angle = np.linspace(0,2*np.pi,100)
+# orbit
 plt.subplot(222)
 plt.plot(res.y[0]/CB, res.y[2]/CB )
-plt.plot(np.cos(angle), np.sin(angle), color='k' )
+rd.plot_circ()
 plt.title("journal orbit")
 plt.xlabel("x/C")
 plt.ylabel("y/C")
-plt.axis('equal')
 plt.grid()
 
 # horiz. displacement disc
