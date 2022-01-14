@@ -24,9 +24,9 @@ g = 9.81    # gravitational acceleration
 m   = 0.1       # mass of rotor / kg
 eps = m*1e-6    # center of mass eccentricity / m (unbalance)
 
-B = 3.5e-3      # journal width / m
-D = 7e-3        # journal diameter / m
-C = 15e-6       # bearing gap / m
+BB  = 3.5e-3      # journal width / m
+DB  = 7e-3        # journal diameter / m
+CB  = 15e-6       # bearing gap / m
 eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
 tmax = 1                    # max. time of calculation / s
@@ -34,16 +34,17 @@ fmax = 700                 # max rotational frequency / Hz
 arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
-# functions
+# rotor ODE
 
 def rotor_rigid(t, q):
-    FB = 2*rd.bearing_journal_short(q,B,D,C,eta,arot*t)   # bearing forces
-    FU = rd.unbalance_const_acc(t,eps,arot) # unbalance forces
+    FB = 2*rd.bearing_journal_short(q,BB,DB,CB,eta,arot*t)  # bearing forces
+    FU = rd.unbalance_const_acc(t,eps,arot)                 # unbalance forces
     return np.hstack(( q[-2:],              # ode in state space formulation
         ( FB + FU)/m - np.array([0,g]) ))
 
 # -----------------------------------------------------------------------------
-# initial conditions [displ. x, displ. y, speed x, speed y]
+# initial conditions
+# q0 = [x, y, xd, yd]
 
 q0  = np.zeros(4)
 
@@ -65,7 +66,7 @@ plt.figure()
 
 # eccentricity over time
 plt.subplot(121)
-plt.plot(res.t, np.sqrt(res.y[0]**2+res.y[1]**2)/C )
+plt.plot(res.t, np.sqrt(res.y[0]**2+res.y[1]**2)/CB )
 plt.title("journal eccentricity")
 plt.xlabel("time / s")
 plt.ylabel("epsilon")
@@ -74,7 +75,7 @@ plt.grid()
 
 # orbit
 plt.subplot(122)
-plt.plot(res.y[0]/C, res.y[1]/C )
+plt.plot(res.y[0]/CB, res.y[1]/CB )
 rd.plot_circ()
 plt.title("journal orbit")
 plt.xlabel("x/C")

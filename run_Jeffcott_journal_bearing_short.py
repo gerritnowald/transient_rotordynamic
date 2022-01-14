@@ -37,7 +37,7 @@ fmax = 500                  # max rotational frequency / Hz
 arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
-# functions
+# rotor ODE
 
 def rotor_Jeffcott(t, q):
     FB   = 2*rd.bearing_journal_short(q[[0,2,4,6]],BB,DB,CB,eta,arot*t)    # bearing forces

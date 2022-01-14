@@ -32,7 +32,7 @@ fmax = 2*np.sqrt(c/m)/2/np.pi    # max rotational frequency / Hz (based on natur
 arot = 2*np.pi*fmax/tmax         # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
-# functions
+# rotor ODE
 
 def rotor_Jeffcott(t, q):
     FU   = rd.unbalance_const_acc(t,eps,arot)       # unbalance forces
