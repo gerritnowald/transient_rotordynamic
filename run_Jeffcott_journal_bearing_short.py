@@ -74,7 +74,7 @@ res = solve_ivp(rotor_Jeffcott, [0, tmax], q0,
 print(f"elapsed time: {time.time() - start_time} s")
 
 # -----------------------------------------------------------------------------
-# plot
+#%% plot
 
 plt.close('all')
 
@@ -100,23 +100,22 @@ plt.grid()
 
 # horiz. displacement disc
 plt.subplot(223)
-plt.plot(res.t, res.y[1]*1e3 )
+plt.plot(res.t, res.y[1]*1e3, label='horiz.' )
+plt.plot(res.t, res.y[3]*1e3, label='vert.' )
+plt.legend()
 plt.title("displacement disc")
 plt.xlabel("time / s")
-plt.ylabel("x / mm")
+plt.ylabel("x, y / mm")
 plt.grid()
 
 # vert. displacement disc
 plt.subplot(224)
-plt.plot(res.t, res.y[3]*1e3 )
-plt.title("displacement disc")
+plt.specgram(res.y[3], Fs=len(res.y[3])/tmax, detrend='mean',
+             NFFT=512, pad_to=4096, noverlap=256 )
+plt.ylim((0,2*fmax))
+plt.title("spectogram disc")
 plt.xlabel("time / s")
-plt.ylabel("y / mm")
-plt.grid()
-
-# plt.specgram(res.y[3])
-# plt.xlim((0,fmax))
-# plt.ylim((0.2,tmax))
+plt.ylabel("frequency / Hz")
 
 plt.tight_layout()
 plt.show()
