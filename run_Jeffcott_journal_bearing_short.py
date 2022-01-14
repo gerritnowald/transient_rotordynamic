@@ -114,5 +114,9 @@ plt.xlabel("time / s")
 plt.ylabel("y / mm")
 plt.grid()
 
+# plt.specgram(res.y[3])
+# plt.xlim((0,fmax))
+# plt.ylim((0.2,tmax))
+
 plt.tight_layout()
 plt.show()
