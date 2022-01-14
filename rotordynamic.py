@@ -41,12 +41,6 @@ def unbalance_const_acc(t,eps,arot):
         eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) ) ])
 
 # -----------------------------------------------------------------------------
-# linear elastic bearing
-
-def bearing_lin_elast(q,cb):
-    return - cb*q    # horizontal, vertical bearing force
-
-# -----------------------------------------------------------------------------
 # short bearing
 
 def short_bearing_forces(eps,epsS,phiS):

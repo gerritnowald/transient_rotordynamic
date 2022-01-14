@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 run-up with constant rotational acceleration 
-of a rigid rotor in linear elastic bearings
+of a Jeffcott rotor in fixed bearings
 
 Created on Jan 04 2022
 
@@ -23,33 +23,43 @@ g = 9.81    # gravitational acceleration
 
 m   = 0.1       # mass of rotor / kg
 eps = m*5e-6    # center of mass eccentricity / m (unbalance)
+c   = 1e4       # shaft stiffness / N/m
 
-cb = 1e4                    # bearing stiffness / N/m
-d  = 1e-2*np.sqrt(cb*m)     # damping coefficient / Ns/m (modal damping)
+d   = 2e-2*np.sqrt(c*m)     # damping coefficient / Ns/m (modal damping)
 
-tmax = 5                            # max. time of calculation / s
-fmax = 1.5*np.sqrt(cb/m)/2/np.pi    # max rotational frequency / Hz (based on natural frequency)
-arot = 2*np.pi*fmax/tmax            # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
+tmax = 5                         # max. time of calculation / s
+fmax = 2*np.sqrt(c/m)/2/np.pi    # max rotational frequency / Hz (based on natural frequency)
+arot = 2*np.pi*fmax/tmax         # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
 # functions
 
-def rotor_rigid(t, q):
-    FB = rd.bearing_lin_elast(q[0:2],cb)    # bearing forces
-    FU = rd.unbalance_const_acc(t,eps,arot) # unbalance forces
-    return np.hstack(( q[-2:],              # ode in state space formulation
-        (-d*q[-2:] + FB + FU)/m - np.array([0,g]) ))
+def rotor_Jeffcott(t, q):
+    FU   = rd.unbalance_const_acc(t,eps,arot)       # unbalance forces
+    fvec = np.hstack(( np.zeros(2), Minv @ FU ))    # external forces state space
+    return A @ q + fvec - gvec
+
+# -----------------------------------------------------------------------------
+# system matrices [x, y]
+
+M = m*np.eye(2)
+D = d*np.eye(2)
+C = c*np.eye(2)
+
+A, Minv = rd.state_space(M,D,C)              # state space matrix
+gvec    = g*np.hstack(( np.zeros(3), 1 ))    # gravity state space
 
 # -----------------------------------------------------------------------------
 # initial conditions (static equilibrium)
+# q0 = [x, y, xd, yd]
 
-q0  = [0, -m*g/cb, 0, 0]    # [displ. x, displ. y, speed x, speed y]
+q0 = np.linalg.solve(A, gvec)
 
 # -----------------------------------------------------------------------------
 # numerical integration
 
 start_time = time.time()
-res = solve_ivp(rotor_rigid, [0, tmax], q0,
+res = solve_ivp(rotor_Jeffcott, [0, tmax], q0,
                 t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6 )
 print(f"elapsed time: {time.time() - start_time} s")
