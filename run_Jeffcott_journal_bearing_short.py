@@ -110,9 +110,9 @@ plt.grid()
 
 # vert. displacement disc
 plt.subplot(224)
-plt.specgram(res.y[3], Fs=len(res.y[3])/tmax, detrend='mean',
+plt.specgram(res.y[3], Fs=len(res.y[3])/max(res.t), detrend='mean',
              NFFT=512, pad_to=4096, noverlap=256 )
-plt.ylim((0,2*fmax))
+plt.ylim((0, arot*max(res.t)/(2*np.pi) ))
 plt.title("spectogram disc")
 plt.xlabel("time / s")
 plt.ylabel("frequency / Hz")
