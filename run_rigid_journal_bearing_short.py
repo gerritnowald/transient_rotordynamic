@@ -37,8 +37,8 @@ arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax
 # rotor ODE
 
 def rotor_rigid(t, q):
-    FB = 2*rd.bearing_journal_short(q,BB,DB,CB,eta,arot*t)  # bearing forces
-    FU = rd.unbalance_const_acc(t,eps,arot)                 # unbalance forces
+    FB = 2*rd.bearing_journal_short(q,BB,DB,CB,eta,arot*t)[:2]  # bearing forces
+    FU = rd.unbalance_const_acc(t,eps,arot)                     # unbalance forces
     return np.hstack(( q[-2:],              # ode in state space formulation
         ( FB + FU)/m - np.array([0,g]) ))
 

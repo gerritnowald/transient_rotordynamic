@@ -63,10 +63,10 @@ def short_bearing_forces(eps,epsS,phiS):
     fphi = 2*vs*(I113*cos_alpha - I203*sin_alpha)
     return np.array([fr, fphi])
 
-def bearing_journal_short(q,B,D,C,eta,omega0):
+def bearing_journal_short(q,B,D,C,eta,omj,oms=0):
     # state vector q = [x, y, xd, yd]
     offset = 1e-10      # against singularities
-    omega0 = np.abs(omega0) + offset
+    omega0 = np.abs(omj+oms) + offset
     d = q[0:2]/C        # journal displacements [x, y]
     v = q[2:]/C/omega0  # journal speeds [xd, yd]
     eps  = np.sqrt(np.sum(d**2)) + offset
@@ -74,7 +74,10 @@ def bearing_journal_short(q,B,D,C,eta,omega0):
     phiS = np.cross(d,v)/eps**2
     cos_delta, sin_delta = d/eps
     # dimensional forces transformed into absolute coordinates
-    return 0.25*D**3*B*eta/C**2*omega0*np.array([
+    FB = 0.25*D**3*B*eta/C**2*omega0*np.array([
         [ cos_delta, -sin_delta ],
         [ sin_delta,  cos_delta ]
         ]) @ short_bearing_forces(eps,epsS,phiS)*(B/D)**2
+    # bearing torque
+    MB = - eta*np.pi*B*D**3/C/4*(omj-oms)/np.sqrt(1-eps**2)
+    return np.hstack((FB, MB))
