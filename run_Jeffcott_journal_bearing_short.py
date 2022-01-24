@@ -41,7 +41,7 @@ arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax
 
 def rotor_Jeffcott(t, q):
     qB   = np.hstack((q[[0,2,4,6]], arot*t, 0))             # bearing state vector
-    FB   = rd.bearing_journal_short(qB,BB,DB,CB,eta)[:2]    # bearing forces
+    FB   = rd.bearing_journal_short(qB,BB,DB,CB,eta)        # bearing forces & torque
     FU   = rd.unbalance_const_acc(t,eps,arot)               # unbalance forces
     Fvec = np.array([ 2*FB[0], FU[0], 2*FB[1], FU[1] ])     # external forces physical space
     fvec = np.hstack(( np.zeros(4), Minv @ Fvec ))          # external forces state space

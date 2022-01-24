@@ -38,10 +38,10 @@ arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax
 
 def rotor_rigid(t, q):
     qB = np.hstack((q, arot*t, 0))                      # bearing state vector
-    FB = rd.bearing_journal_short(qB,BB,DB,CB,eta)[:2]  # bearing forces
+    FB = rd.bearing_journal_short(qB,BB,DB,CB,eta)      # bearing forces & torque
     FU = rd.unbalance_const_acc(t,eps,arot)             # unbalance forces
     return np.hstack(( q[-2:],                          # ode in state space formulation
-        ( 2*FB + FU)/m - np.array([0,g]) ))
+        (2*FB[:2] + FU)/m - np.array([0,g]) ))
 
 # -----------------------------------------------------------------------------
 # initial conditions
@@ -59,7 +59,7 @@ res = solve_ivp(rotor_rigid, [0, tmax], q0,
 print(f"elapsed time: {time.time() - start_time} s")
 
 # -----------------------------------------------------------------------------
-# plot
+#%% plot
 
 plt.close('all')
 

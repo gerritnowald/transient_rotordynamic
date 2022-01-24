@@ -65,19 +65,21 @@ def short_bearing_forces(eps,epsS,phiS):
 
 def bearing_journal_short(q,B,D,C,eta):
     # bearing state vector q = [x, y, xd, yd, omj, oms]
-    offset = 1e-10      # against singularities
-    omega0 = np.abs(q[-2]+q[-1]) + offset   # reference angular velocity
-    d = q[0:2]/C        # journal displacements [x, y]
-    v = q[2:4]/C/omega0 # journal speeds [xd, yd]
-    eps  = np.sqrt(np.sum(d**2)) + offset
-    epsS = d @ v/eps
-    phiS = np.cross(d,v)/eps**2
-    cos_delta, sin_delta = d/eps
+    # kinematics
+    omega0 = np.abs(q[-2]+q[-1]) + 1e-10    # reference angular velocity
+    d = q[0:2]/C                            # relative journal displacements [x, y]
+    v = q[2:4]/C/omega0                     # relative journal speeds [xd, yd]
+    eps  = np.sqrt(np.sum(d**2)) + 1e-10    # journal eccentricity
+    epsS = d @ v/eps                        # dimensionless squeeze speed
+    phiS = np.cross(d,v)/eps**2             # dimensionless whirl speed
+    cos_delta, sin_delta = d/eps            # absolute angle of widest gap
+    # dimensionless bearing forces
+    fb = (B/D)**2*short_bearing_forces(eps,epsS,phiS)
     # dimensional forces transformed into absolute coordinates
     FB = 0.25*D**3*B*eta/C**2*omega0*np.array([
         [ cos_delta, -sin_delta ],
         [ sin_delta,  cos_delta ]
-        ]) @ short_bearing_forces(eps,epsS,phiS)*(B/D)**2
+        ]) @ fb
     # bearing torque
     MB = - eta*np.pi*B*D**3/C/4*(q[-2]-q[-1])/np.sqrt(1-eps**2)
     return np.hstack((FB, MB))
