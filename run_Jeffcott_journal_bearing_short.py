@@ -13,6 +13,7 @@ import rotordynamic as rd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
+from scipy.linalg    import block_diag
 
 import time
 
@@ -53,8 +54,8 @@ def rotor_Jeffcott(t, q):
 M = np.diag([mj,m,mj,m])
 
 O = np.array([[1,-1], [-1,1]])
-D = np.vstack(( np.hstack((  d*O, np.zeros((2,2)) )), np.hstack(( np.zeros((2,2)),  d*O )) ))
-C = np.vstack(( np.hstack(( cs*O, np.zeros((2,2)) )), np.hstack(( np.zeros((2,2)), cs*O )) ))
+D = block_diag(  d*O, d*O )
+C = block_diag( cs*O,cs*O )
 
 A, Minv = rd.state_space(M,D,C)                             # state space matrix
 gvec    = g*np.hstack(( np.zeros(6), np.array([1,1]) ))     # gravity state space
