@@ -13,6 +13,7 @@ import rotordynamic as rd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
+from scipy.linalg    import block_diag
 
 import time
 
@@ -40,10 +41,11 @@ arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax
 # rotor ODE
 
 def rotor_Jeffcott(t, q):
-    FB   = 2*rd.bearing_journal_short(q[[0,2,4,6]],BB,DB,CB,eta,arot*t)    # bearing forces
-    FU   = rd.unbalance_const_acc(t,eps,arot)       # unbalance forces
-    Fvec = np.array([ FB[0], FU[0], FB[1], FU[1] ]) # external forces physical space
-    fvec = np.hstack(( np.zeros(4), Minv @ Fvec ))  # external forces state space
+    qB   = np.hstack((q[[0,2,4,6]], arot*t, 0))             # bearing state vector
+    FB   = rd.bearing_journal_short(qB,BB,DB,CB,eta)        # bearing forces & torque
+    FU   = rd.unbalance_const_acc(t,eps,arot)               # unbalance forces
+    Fvec = np.array([ 2*FB[0], FU[0], 2*FB[1], FU[1] ])     # external forces physical space
+    fvec = np.hstack(( np.zeros(4), Minv @ Fvec ))          # external forces state space
     return A @ q + fvec - gvec
 
 # -----------------------------------------------------------------------------
@@ -52,23 +54,17 @@ def rotor_Jeffcott(t, q):
 M = np.diag([mj,m,mj,m])
 
 O = np.array([[1,-1], [-1,1]])
-D = np.vstack(( np.hstack((  d*O, np.zeros((2,2)) )), np.hstack(( np.zeros((2,2)),  d*O )) ))
-C = np.vstack(( np.hstack(( cs*O, np.zeros((2,2)) )), np.hstack(( np.zeros((2,2)), cs*O )) ))
+D = block_diag(  d*O, d*O )
+C = block_diag( cs*O,cs*O )
 
-A, Minv = rd.state_space(M,D,C)                             # state space matrix
-gvec    = g*np.hstack(( np.zeros(6), np.array([1,1]) ))     # gravity state space
-
-# -----------------------------------------------------------------------------
-# initial conditions
-# q0 = [xj, xm, yj, ym, xdj, xdm, ydj, ydm]
-
-q0  = np.zeros(8) + 1e-10
+A, Minv = rd.state_space(M,D,C)                                 # state space matrix
+gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1 ))    # gravity state space
 
 # -----------------------------------------------------------------------------
 # numerical integration
 
 start_time = time.time()
-res = solve_ivp(rotor_Jeffcott, [0, tmax], q0,
+res = solve_ivp(rotor_Jeffcott, [0, tmax], np.zeros(np.shape(A)[0]) + 1e-10,
                 t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6, method='BDF' )
 print(f"elapsed time: {time.time() - start_time} s")

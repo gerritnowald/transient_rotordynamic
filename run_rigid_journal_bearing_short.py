@@ -24,41 +24,36 @@ g = 9.81    # gravitational acceleration
 m   = 0.1       # mass of rotor / kg
 eps = m*1e-6    # center of mass eccentricity / m (unbalance)
 
-BB  = 3.5e-3      # journal width / m
-DB  = 7e-3        # journal diameter / m
-CB  = 15e-6       # bearing gap / m
+BB  = 3.5e-3    # journal width / m
+DB  = 7e-3      # journal diameter / m
+CB  = 15e-6     # bearing gap / m
 eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
-tmax = 1                    # max. time of calculation / s
+tmax = 1                   # max. time of calculation / s
 fmax = 700                 # max rotational frequency / Hz
-arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
+arot = 2*np.pi*fmax/tmax   # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
 # rotor ODE
 
 def rotor_rigid(t, q):
-    FB = 2*rd.bearing_journal_short(q,BB,DB,CB,eta,arot*t)  # bearing forces
-    FU = rd.unbalance_const_acc(t,eps,arot)                 # unbalance forces
-    return np.hstack(( q[-2:],              # ode in state space formulation
-        ( FB + FU)/m - np.array([0,g]) ))
-
-# -----------------------------------------------------------------------------
-# initial conditions
-# q0 = [x, y, xd, yd]
-
-q0  = np.zeros(4)
+    qB = np.hstack((q, arot*t, 0))                      # bearing state vector
+    FB = rd.bearing_journal_short(qB,BB,DB,CB,eta)      # bearing forces & torque
+    FU = rd.unbalance_const_acc(t,eps,arot)             # unbalance forces
+    return np.hstack(( q[-2:],                          # ode in state space formulation
+        (2*FB[:2] + FU)/m - np.array([0,g]) ))
 
 # -----------------------------------------------------------------------------
 # numerical integration
 
 start_time = time.time()
-res = solve_ivp(rotor_rigid, [0, tmax], q0,
+res = solve_ivp(rotor_rigid, [0, tmax], np.zeros(4),
                 t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6, method='BDF' )
 print(f"elapsed time: {time.time() - start_time} s")
 
 # -----------------------------------------------------------------------------
-# plot
+#%% plot
 
 plt.close('all')
 
