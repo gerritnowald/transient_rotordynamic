@@ -57,20 +57,14 @@ O = np.array([[1,-1], [-1,1]])
 D = block_diag(  d*O, d*O )
 C = block_diag( cs*O,cs*O )
 
-A, Minv = rd.state_space(M,D,C)                             # state space matrix
-gvec    = g*np.hstack(( np.zeros(6), np.array([1,1]) ))     # gravity state space
-
-# -----------------------------------------------------------------------------
-# initial conditions
-# q0 = [xj, xm, yj, ym, xdj, xdm, ydj, ydm]
-
-q0  = np.zeros(8) + 1e-10
+A, Minv = rd.state_space(M,D,C)                                 # state space matrix
+gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1 ))    # gravity state space
 
 # -----------------------------------------------------------------------------
 # numerical integration
 
 start_time = time.time()
-res = solve_ivp(rotor_Jeffcott, [0, tmax], q0,
+res = solve_ivp(rotor_Jeffcott, [0, tmax], np.zeros(np.shape(A)[0]) + 1e-10,
                 t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6, method='BDF' )
 print(f"elapsed time: {time.time() - start_time} s")

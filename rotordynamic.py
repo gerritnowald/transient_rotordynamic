@@ -26,7 +26,7 @@ def plot_circ( R=1, C=(0,0), color='k', points=50 ):
 def state_space(M,D,C):
     Minv = np.linalg.inv(M)
     A = np.vstack((      # state space matrix
-        np.hstack(( np.zeros(np.shape(M)), np.eye(np.shape(M)[1]) )),
+        np.hstack(( np.zeros(np.shape(M)), np.eye(np.shape(M)[0]) )),
         np.hstack(( - Minv @ C, - Minv @ D )) ))
     return A, Minv
 
@@ -63,12 +63,12 @@ def short_bearing_forces(eps,epsS,phiS):
     fphi = 2*vs*(I113*cos_alpha - I203*sin_alpha)
     return np.array([fr, fphi])
 
-def bearing_journal_short(q,B,D,C,eta):
-    # bearing state vector q = [x, y, xd, yd, omj, oms]
+def bearing_journal_short(qB,B,D,C,eta):
+    # bearing state vector qB = [x, y, xd, yd, omj, oms]
     # kinematics
-    omega0 = np.abs(q[-2]+q[-1]) + 1e-10    # reference angular velocity
-    d = q[0:2]/C                            # relative journal displacements [x, y]
-    v = q[2:4]/C/omega0                     # relative journal speeds [xd, yd]
+    omega0 = np.abs(qB[4]+qB[5]) + 1e-10    # reference angular velocity
+    d = qB[0:2]/C                           # relative journal displacements [x, y]
+    v = qB[2:4]/C/omega0                    # relative journal speeds [xd, yd]
     eps  = np.sqrt(np.sum(d**2)) + 1e-10    # journal eccentricity
     epsS = d @ v/eps                        # dimensionless squeeze speed
     phiS = np.cross(d,v)/eps**2             # dimensionless whirl speed
@@ -81,5 +81,5 @@ def bearing_journal_short(q,B,D,C,eta):
         [ sin_delta,  cos_delta ]
         ]) @ fb
     # bearing torque
-    MB = - eta*np.pi*B*D**3/C/4*(q[-2]-q[-1])/np.sqrt(1-eps**2)
+    MB = - eta*np.pi*B*D**3/C/4*(qB[4]-qB[5])/np.sqrt(1-eps**2)
     return np.hstack((FB, MB))
