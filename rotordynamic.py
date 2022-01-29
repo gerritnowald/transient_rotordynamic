@@ -10,11 +10,15 @@ Created on Wed Jan  5 16:30:25 2022
 import numpy as np
 import matplotlib.pyplot as plt
 
+# from numba import jit
+
 # -----------------------------------------------------------------------------
 # math
 
+# @jit
 def cos_sin(q):                       # q = np.array([x,y])
-    return q/np.sqrt(np.sum(q**2))    # [cos, sin]
+    angle = q/np.sqrt(np.sum(q**2))    # [cos, sin]
+    return angle
 
 def plot_circ( R=1, C=(0,0), color='k', points=50 ):
     angle = np.linspace(0, 2*np.pi, points)
@@ -43,6 +47,7 @@ def unbalance_const_acc(t,eps,arot):
 # -----------------------------------------------------------------------------
 # short bearing
 
+# @jit
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
 # Vrande, van de, B. L. (2001). Nonlinear dynamics of elementary rotor systems 
@@ -61,8 +66,10 @@ def short_bearing_forces(eps,epsS,phiS):
     # dimensionless forces
     fr   = 2*vs*(I023*cos_alpha - I113*sin_alpha)
     fphi = 2*vs*(I113*cos_alpha - I203*sin_alpha)
-    return np.array([fr, fphi])
+    f = np.array([fr, fphi])
+    return f
 
+# @jit
 def bearing_journal_short(qB,B,D,C,eta):
     # bearing state vector qB = [x, y, xd, yd, omj, oms]
     # kinematics
@@ -82,4 +89,5 @@ def bearing_journal_short(qB,B,D,C,eta):
         ]) @ fb
     # bearing torque
     MB = - eta*np.pi*B*D**3/C/4*(qB[4]-qB[5])/np.sqrt(1-eps**2)
-    return np.hstack((FB, MB))
+    F = np.hstack((FB, MB))
+    return F
