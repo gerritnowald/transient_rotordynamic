@@ -10,14 +10,18 @@ Created on Wed Jan  5 16:30:25 2022
 import numpy as np
 import matplotlib.pyplot as plt
 
-# from numba import jit
+# from numba import njit
 
 # -----------------------------------------------------------------------------
 # math
 
-# @jit
-def cos_sin(q):                       # q = np.array([x,y])
-    angle = q/np.sqrt(np.sum(q**2))    # [cos, sin]
+# @njit
+def cos_sin(q):
+    # q = np.array([x,y])
+    angle = np.empty(2, dtype=np.float64)
+    denominator = np.sqrt(np.sum(q**2))
+    angle[0] = q[0]/denominator     # cos
+    angle[1] = q[1]/denominator     # sin
     return angle
 
 def plot_circ( R=1, C=(0,0), color='k', points=50 ):
@@ -47,7 +51,7 @@ def unbalance_const_acc(t,eps,arot):
 # -----------------------------------------------------------------------------
 # short bearing
 
-# @jit
+# @njit
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
 # Vrande, van de, B. L. (2001). Nonlinear dynamics of elementary rotor systems 
@@ -55,7 +59,10 @@ def short_bearing_forces(eps,epsS,phiS):
 # https://doi.org/10.6100/IR550147
     vs = - np.sqrt(epsS**2+(eps*(phiS-0.5))**2)    # effective squeeze speed
     cos_alpha, sin_alpha = cos_sin(np.array([epsS, eps*(0.5-phiS)]))    # effective squeeze angle
-    delta = (-1)**(cos_alpha<0)
+    if cos_alpha<0:
+        delta = -1
+    else:
+        delta = 1
     A = (eps+sin_alpha)/(1+eps*sin_alpha)
     B = (eps-sin_alpha)/(1-eps*sin_alpha)
     # integrals
@@ -66,10 +73,11 @@ def short_bearing_forces(eps,epsS,phiS):
     # dimensionless forces
     fr   = 2*vs*(I023*cos_alpha - I113*sin_alpha)
     fphi = 2*vs*(I113*cos_alpha - I203*sin_alpha)
-    f = np.array([fr, fphi])
+    f = np.empty(2, dtype=np.float64)
+    f[0] = fr
+    f[1] = fphi
     return f
 
-# @jit
 def bearing_journal_short(qB,B,D,C,eta):
     # bearing state vector qB = [x, y, xd, yd, omj, oms]
     # kinematics
