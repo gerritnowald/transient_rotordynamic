@@ -82,9 +82,9 @@ def bearing_journal_short(qB,B,D,C,eta):
     omega0 = np.abs(qB[4]+qB[5]) + 1e-10    # reference angular velocity
     d = qB[0:2]/C                           # relative journal displacements [x, y]
     v = qB[2:4]/C/omega0                    # relative journal speeds [xd, yd]
-    eps  = np.sqrt(np.sum(d**2)) + 1e-10    # journal eccentricity
+    eps  = np.sqrt(d[0]*d[0]+d[1]*d[1]) + 1e-10    # journal eccentricity
     epsS = d @ v/eps                        # dimensionless squeeze speed
-    phiS = np.cross(d,v)/eps**2             # dimensionless whirl speed
+    phiS = (d[0]*v[1]-d[1]*v[0])/eps**2     # dimensionless whirl speed
     cos_delta, sin_delta = d/eps            # absolute angle of widest gap
     # dimensionless bearing forces
     fb = (B/D)**2*short_bearing_forces(eps,epsS,phiS)
