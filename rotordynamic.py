@@ -10,16 +10,16 @@ Created on Wed Jan  5 16:30:25 2022
 import numpy as np
 import matplotlib.pyplot as plt
 
-# from numba import njit
+from numba import njit
 
 # -----------------------------------------------------------------------------
 # math
 
-# @njit
+@njit
 def cos_sin(q):
-    # q = np.array([x,y])
+    # q = [x,y]
+    denominator = np.sqrt(q[0]*q[0]+q[1]*q[1])
     angle = np.empty(2, dtype=np.float64)
-    denominator = np.sqrt(np.sum(q**2))
     angle[0] = q[0]/denominator     # cos
     angle[1] = q[1]/denominator     # sin
     return angle
@@ -51,15 +51,15 @@ def unbalance_const_acc(t,eps,arot):
 # -----------------------------------------------------------------------------
 # short bearing
 
-# @njit
+@njit
 def short_bearing_forces(eps,epsS,phiS):
 # journal bearing forces short bearing theory
 # Vrande, van de, B. L. (2001). Nonlinear dynamics of elementary rotor systems 
 # with compliant plain journal bearings. Technische Universiteit Eindhoven.
 # https://doi.org/10.6100/IR550147
-    vs = - np.sqrt(epsS**2+(eps*(phiS-0.5))**2)    # effective squeeze speed
-    cos_alpha, sin_alpha = cos_sin(np.array([epsS, eps*(0.5-phiS)]))    # effective squeeze angle
-    if cos_alpha<0:
+    vs = - np.sqrt(epsS**2+(eps*(phiS-0.5))**2)             # effective squeeze speed
+    cos_alpha, sin_alpha = cos_sin([epsS, eps*(0.5-phiS)])  # effective squeeze angle
+    if cos_alpha < 0:
         delta = -1
     else:
         delta = 1
@@ -71,11 +71,9 @@ def short_bearing_forces(eps,epsS,phiS):
     I113 = -2*eps*sin_alpha**3/(1-eps**2*sin_alpha**2)**2
     I203 = 1/(2*(1-eps**2))*(I001 + 2*eps*cos_alpha*(1-(2-eps**2)*sin_alpha**2)/(1-eps**2*sin_alpha**2)**2)
     # dimensionless forces
-    fr   = 2*vs*(I023*cos_alpha - I113*sin_alpha)
-    fphi = 2*vs*(I113*cos_alpha - I203*sin_alpha)
     f = np.empty(2, dtype=np.float64)
-    f[0] = fr
-    f[1] = fphi
+    f[0] = 2*vs*(I023*cos_alpha - I113*sin_alpha)   # fr
+    f[1] = 2*vs*(I113*cos_alpha - I203*sin_alpha)   # fphi
     return f
 
 def bearing_journal_short(qB,B,D,C,eta):
@@ -91,11 +89,11 @@ def bearing_journal_short(qB,B,D,C,eta):
     # dimensionless bearing forces
     fb = (B/D)**2*short_bearing_forces(eps,epsS,phiS)
     # dimensional forces transformed into absolute coordinates
-    FB = 0.25*D**3*B*eta/C**2*omega0*np.array([
+    F = np.empty(3, dtype=np.float64)
+    F[0:2] = 0.25*D**3*B*eta/C**2*omega0*np.array([
         [ cos_delta, -sin_delta ],
         [ sin_delta,  cos_delta ]
         ]) @ fb
     # bearing torque
-    MB = - eta*np.pi*B*D**3/C/4*(qB[4]-qB[5])/np.sqrt(1-eps**2)
-    F = np.hstack((FB, MB))
+    F[2] = - eta*np.pi*B*D**3/C/4*(qB[4]-qB[5])/np.sqrt(1-eps**2)
     return F
