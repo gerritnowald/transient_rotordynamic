@@ -76,6 +76,7 @@ def short_bearing_forces(eps,epsS,phiS):
     f[1] = 2*vs*(I113*cos_alpha - I203*sin_alpha)   # fphi
     return f
 
+@njit
 def bearing_journal_short(qB,B,D,C,eta):
     # bearing state vector qB = [x, y, xd, yd, omj, oms]
     # kinematics

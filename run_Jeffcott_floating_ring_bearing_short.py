@@ -49,14 +49,18 @@ arot = 2*np.pi*900/3    # acceleration of rotor speed / rad/s**2 (reach fmax in 
 # rotor ODE
 
 def rotor_Jeffcott(t, q):
-    qBi  = np.hstack(( q[0]-q[4], q[2]-q[5], q[7]-q[11], q[9]-q[12], arot*t, q[6] ))    # bearing state vector
-    FBi  = rd.bearing_journal_short(qBi,BBi,DBi,CBi,etai)   # bearing forces & torque
-    qBo  = np.hstack(( q[4], q[5], q[11], q[12], q[6], 0 )) # bearing state vector
-    FBo  = rd.bearing_journal_short(qBo,BBo,DBo,CBo,etao)   # bearing forces & torque
+    # bearing state vectors
+    qBi  = np.array([ q[0]-q[4], q[2]-q[5], q[7]-q[11], q[9]-q[12], arot*t, q[6] ])
+    qBo  = np.array([ q[4], q[5], q[11], q[12], q[6], 0 ])
+    # external forces
+    FBi  = rd.bearing_journal_short(qBi,BBi,DBi,CBi,etai)   # inner bearing forces & torque
+    FBo  = rd.bearing_journal_short(qBo,BBo,DBo,CBo,etao)   # outer bearing forces & torque
     FU   = rd.unbalance_const_acc(t,eps,arot)               # unbalance forces
+    # ode in state space formulation
     Fvec = np.array([ 2*FBi[0], FU[0], 2*FBi[1], FU[1], 2*(FBo[0]-FBi[0]), 2*(FBo[1]-FBi[1]), 2*(FBo[2]-FBi[2]) ])   # external forces physical space
-    fvec = np.hstack(( np.zeros(7), Minv @ Fvec ))          # external forces state space
-    return A @ q + fvec - gvec
+    qd      = A @ q - gvec
+    qd[7:] += Minv @ Fvec   # adding external forces
+    return qd
 
 # -----------------------------------------------------------------------------
 # system matrices [xj, xm, yj, ym, xf, yf, omf]
