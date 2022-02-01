@@ -41,12 +41,17 @@ def state_space(M,D,C):
 # -----------------------------------------------------------------------------
 # rotor
 
+@njit
 def unbalance_const_acc(t,eps,arot):
     alphad = arot*t
     alpha  = 0.5*arot*t**2
-    return np.array([    # horizontal, vertical unbalance force
-        eps*( arot*np.cos(alpha) - alphad**2*np.sin(alpha) ) ,
-        eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) ) ])
+    FU = np.empty(2, dtype=np.float64)
+    FU[0] = eps*( arot*np.cos(alpha) - alphad**2*np.sin(alpha) )
+    FU[1] = eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) )
+    return FU
+    # return np.array([    # horizontal, vertical unbalance force
+    #     eps*( arot*np.cos(alpha) - alphad**2*np.sin(alpha) ) ,
+    #     eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) ) ])
 
 # -----------------------------------------------------------------------------
 # short bearing
@@ -59,7 +64,7 @@ def short_bearing_forces(eps,epsS,phiS):
 # https://doi.org/10.6100/IR550147
     vs = - np.sqrt(epsS**2+(eps*(phiS-0.5))**2)             # effective squeeze speed
     cos_alpha, sin_alpha = cos_sin([epsS, eps*(0.5-phiS)])  # effective squeeze angle
-    if cos_alpha < 0:
+    if cos_alpha < 0:   # (-1)**(cos_alpha<0)
         delta = -1
     else:
         delta = 1

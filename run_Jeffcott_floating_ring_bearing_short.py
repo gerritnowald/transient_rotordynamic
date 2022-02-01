@@ -15,6 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.linalg    import block_diag
+from numba import njit
 
 import time
 
@@ -48,6 +49,7 @@ arot = 2*np.pi*900/3    # acceleration of rotor speed / rad/s**2 (reach fmax in 
 # -----------------------------------------------------------------------------
 # rotor ODE
 
+@njit
 def rotor_Jeffcott(t, q):
     # bearing state vectors
     qBi  = np.array([ q[0]-q[4], q[2]-q[5], q[7]-q[11], q[9]-q[12], arot*t, q[6] ])
@@ -71,7 +73,7 @@ O = np.array([[1,-1], [-1,1]])
 D = block_diag(  d*O,  d*O, np.zeros((3,3)) )
 C = block_diag( cs*O, cs*O, np.zeros((3,3)) )
 
-A, Minv = rd.state_space(M,D,C)                                       # state space matrix
+A, Minv = rd.state_space(M,D,C)    # state space matrix
 gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1,0,1,0 ))    # gravity state space
 
 # -----------------------------------------------------------------------------
