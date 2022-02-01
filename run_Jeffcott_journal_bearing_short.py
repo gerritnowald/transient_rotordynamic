@@ -72,7 +72,7 @@ gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1 ))    # gravity state 
 start_time = time.time()
 res = solve_ivp(rotor_Jeffcott, [0, tmax], np.zeros(np.shape(A)[0]) + 1e-10,
                 t_eval = np.linspace(0, tmax, int(tmax**2*arot/2/np.pi*30) ),    # points of orbit at highest frequency
-                rtol=1e-6, atol=1e-6, method='BDF' )
+                rtol=1e-6, atol=1e-6, method='LSODA' )
 print(f"elapsed time: {time.time() - start_time} s")
 
 # -----------------------------------------------------------------------------
