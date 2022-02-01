@@ -34,19 +34,25 @@ CB = 15e-6      # bearing gap / m
 eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
 tmax = 1                    # max. time of calculation / s
-fmax = 500                  # max rotational frequency / Hz
+fmax = 500                  # max rotational frequency / Hz (optional)
 arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
 # rotor ODE
 
 def rotor_Jeffcott(t, q):
-    qB   = np.hstack((q[[0,2,4,6]], arot*t, 0))             # bearing state vector
+    # bearing state vector
+    qB = np.zeros(6, dtype=np.float64)
+    qB[0:4] = q[[0,2,4,6]]
+    qB[4]   = arot*t
+    # external forces
     FB   = rd.bearing_journal_short(qB,BB,DB,CB,eta)        # bearing forces & torque
     FU   = rd.unbalance_const_acc(t,eps,arot)               # unbalance forces
-    Fvec = np.array([ 2*FB[0], FU[0], 2*FB[1], FU[1] ])     # external forces physical space
-    fvec = np.hstack(( np.zeros(4), Minv @ Fvec ))          # external forces state space
-    return A @ q + fvec - gvec
+    Fvec = np.array([ 2*FB[0], FU[0], 2*FB[1], FU[1] ])     # external forces
+    # ode in state space formulation
+    qd      = A @ q - gvec
+    qd[4:] += Minv @ Fvec   # adding external forces
+    return qd
 
 # -----------------------------------------------------------------------------
 # system matrices [xj, xm, yj, ym]
@@ -65,7 +71,7 @@ gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1 ))    # gravity state 
 
 start_time = time.time()
 res = solve_ivp(rotor_Jeffcott, [0, tmax], np.zeros(np.shape(A)[0]) + 1e-10,
-                t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
+                t_eval = np.linspace(0, tmax, int(tmax**2*arot/2/np.pi*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6, method='BDF' )
 print(f"elapsed time: {time.time() - start_time} s")
 
