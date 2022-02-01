@@ -34,7 +34,7 @@ CB = 15e-6      # bearing gap / m
 eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
 tmax = 1                    # max. time of calculation / s
-fmax = 500                  # max rotational frequency / Hz
+fmax = 500                  # max rotational frequency / Hz (optional)
 arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
@@ -71,7 +71,7 @@ gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1 ))    # gravity state 
 
 start_time = time.time()
 res = solve_ivp(rotor_Jeffcott, [0, tmax], np.zeros(np.shape(A)[0]) + 1e-10,
-                t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
+                t_eval = np.linspace(0, tmax, int(tmax**2*arot/2/np.pi*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6, method='BDF' )
 print(f"elapsed time: {time.time() - start_time} s")
 

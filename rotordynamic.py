@@ -43,15 +43,13 @@ def state_space(M,D,C):
 
 @njit
 def unbalance_const_acc(t,eps,arot):
+    # unbalance forces
     alphad = arot*t
     alpha  = 0.5*arot*t**2
     FU = np.empty(2, dtype=np.float64)
-    FU[0] = eps*( arot*np.cos(alpha) - alphad**2*np.sin(alpha) )
-    FU[1] = eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) )
+    FU[0] = eps*( arot*np.cos(alpha) - alphad**2*np.sin(alpha) )    # horizontal
+    FU[1] = eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) )    # vertical
     return FU
-    # return np.array([    # horizontal, vertical unbalance force
-    #     eps*( arot*np.cos(alpha) - alphad**2*np.sin(alpha) ) ,
-    #     eps*( arot*np.sin(alpha) + alphad**2*np.cos(alpha) ) ])
 
 # -----------------------------------------------------------------------------
 # short bearing
