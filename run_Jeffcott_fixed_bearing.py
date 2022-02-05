@@ -22,13 +22,13 @@ g = 9.81    # gravitational acceleration
 # parameters
 
 m   = 0.1       # mass of rotor / kg
-eps = m*5e-6    # center of mass eccentricity / m (unbalance)
-c   = 1e4       # shaft stiffness / N/m
+eps = m*2e-5    # center of mass eccentricity / m (unbalance)
+c   = 1e5       # shaft stiffness / N/m
 
-d   = 2e-2*np.sqrt(c*m)     # damping coefficient / Ns/m (modal damping)
+d   = 1e-2*np.sqrt(c*m)     # damping coefficient / Ns/m (modal damping)
 
-tmax = 5                         # max. time of calculation / s
-fmax = 2*np.sqrt(c/m)/2/np.pi    # max rotational frequency / Hz (based on natural frequency)
+tmax = 2                         # max. time of calculation / s
+fmax = 4*np.sqrt(c/m)/2/np.pi    # max rotational frequency / Hz (based on natural frequency)
 arot = 2*np.pi*fmax/tmax         # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
@@ -65,18 +65,20 @@ res = solve_ivp(rotor_Jeffcott, [0, tmax], q0,
 print(f"elapsed time: {time.time() - start_time} s")
 
 # -----------------------------------------------------------------------------
-# plot
+#%% plot
 
 plt.close('all')
 
 plt.figure()
 
-# displacement over time
+# plt.style.use('dark_background')
+
+# deflection over time
 plt.subplot(121)
-plt.plot(res.t, res.y[1]*1e3 )
-plt.title("displacement")
+plt.plot(res.t, np.sqrt(res.y[0]**2+(res.y[1]-q0[1])**2)*1e3, color='gold' )
+plt.title("deflection")
 plt.xlabel("time / s")
-plt.ylabel("y / mm")
+plt.ylabel("r / mm")
 plt.grid()
 
 # orbit
@@ -90,3 +92,5 @@ plt.grid()
 
 plt.tight_layout()
 plt.show()
+
+# plt.savefig('Jeffcott_fixed.png', transparent=True)
