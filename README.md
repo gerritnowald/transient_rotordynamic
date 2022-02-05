@@ -1,5 +1,7 @@
 # transient_rotordynamic
-Simulation of an elastic (Jeffcott/Laval) rotor in journal bearings (analytical short bearing solution) and linear elastic bearings .
+Simulation of an elastic (Jeffcott/Laval) rotor in journal bearings (analytical short bearing solution) and linear elastic bearings.
+
+Details of the dynamic behavior can be found in this blog post: https://gerritnowald.wordpress.com/2022/02/05/simulating-vibration-of-rotors-with-python/
 
 ODEs of the rotors are taken from my Ph.D. dissertation:
 Nowald, Gerrit Edgar (2018). Numerical Investigation of Rotors in Floating Ring Bearings using Co-Simulation. Technische Universität Darmstadt. https://tuprints.ulb.tu-darmstadt.de/8186
