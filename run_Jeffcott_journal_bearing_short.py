@@ -24,7 +24,7 @@ g = 9.81    # gravitational acceleration
 
 m   = 0.1       # mass of rotor / kg
 mj  = 1e-5      # journal mass / kg
-eps = m*1e-6    # center of mass eccentricity / m (unbalance)
+eps = m*2e-5    # center of mass eccentricity / m (unbalance)
 cs  = 1e5       # shaft stiffness / N/m
 d   = 1e-2*np.sqrt(cs*m)     # damping coefficient / Ns/m (modal damping)
 
@@ -33,18 +33,21 @@ DB = 7e-3       # journal diameter / m
 CB = 15e-6      # bearing gap / m
 eta = 1e-2      # dyn. oil viscosity / Ns/m^2
 
-tmax = 1                    # max. time of calculation / s
-fmax = 500                  # max rotational frequency / Hz
+tmax = 2                    # max. time of calculation / s
+fmax = 700                  # max rotational frequency / Hz (optional)
 arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
 # rotor ODE
 
 def rotor_Jeffcott(t, q):
-    qB   = np.hstack((q[[0,2,4,6]], arot*t, 0))             # bearing state vector
+	# bearing state vector
+    qB   = np.hstack((q[[0,2,4,6]], arot*t, 0))
+	# external forces
     FB   = rd.bearing_journal_short(qB,BB,DB,CB,eta)        # bearing forces & torque
     FU   = rd.unbalance_const_acc(t,eps,arot)               # unbalance forces
     Fvec = np.array([ 2*FB[0], FU[0], 2*FB[1], FU[1] ])     # external forces physical space
+	# ode in state space formulation
     fvec = np.hstack(( np.zeros(4), Minv @ Fvec ))          # external forces state space
     return A @ q + fvec - gvec
 
@@ -65,7 +68,7 @@ gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1 ))    # gravity state 
 
 start_time = time.time()
 res = solve_ivp(rotor_Jeffcott, [0, tmax], np.zeros(np.shape(A)[0]) + 1e-10,
-                t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
+                t_eval = np.linspace(0, tmax, int(tmax**2*arot/2/np.pi*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6, method='BDF' )
 print(f"elapsed time: {time.time() - start_time} s")
 
@@ -75,6 +78,8 @@ print(f"elapsed time: {time.time() - start_time} s")
 plt.close('all')
 
 plt.figure()
+
+# plt.style.use('dark_background')
 
 # eccentricity over time
 plt.subplot(221)
@@ -94,20 +99,18 @@ plt.xlabel("x/C")
 plt.ylabel("y/C")
 plt.grid()
 
-# horiz. displacement disc
+# deflection disc
 plt.subplot(223)
-plt.plot(res.t, res.y[1]*1e3, label='horiz.' )
-plt.plot(res.t, res.y[3]*1e3, label='vert.' )
-plt.legend()
-plt.title("displacement disc")
+plt.plot(res.t, np.sqrt(res.y[1]**2+res.y[3]**2)*1e3, color='gold' )
+plt.title("deflection disc")
 plt.xlabel("time / s")
-plt.ylabel("x, y / mm")
+plt.ylabel("r / mm")
 plt.grid()
 
-# vert. displacement disc
+# spectogram vert. displacement disc
 plt.subplot(224)
 plt.specgram(res.y[3], Fs=len(res.y[3])/max(res.t), detrend='mean',
-             NFFT=512, pad_to=4096, noverlap=256 )
+              NFFT=512, pad_to=4096, noverlap=256 )
 plt.ylim((0, arot*max(res.t)/(2*np.pi) ))
 plt.title("spectogram disc")
 plt.xlabel("time / s")
@@ -115,3 +118,5 @@ plt.ylabel("frequency / Hz")
 
 plt.tight_layout()
 plt.show()
+
+# plt.savefig('Jeffcott_journal.png', transparent=True)
