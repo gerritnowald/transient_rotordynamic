@@ -28,7 +28,7 @@ c   = 1e5       # shaft stiffness / N/m
 d   = 1e-2*np.sqrt(c*m)     # damping coefficient / Ns/m (modal damping)
 
 tmax = 2                         # max. time of calculation / s
-fmax = 4*np.sqrt(c/m)/2/np.pi    # max rotational frequency / Hz (based on natural frequency)
+fmax = 4*np.sqrt(c/m)/2/np.pi    # max rotational frequency / Hz (based on natural frequency, optional)
 arot = 2*np.pi*fmax/tmax         # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
@@ -60,7 +60,7 @@ q0 = np.linalg.solve(A, gvec)
 
 start_time = time.time()
 res = solve_ivp(rotor_Jeffcott, [0, tmax], q0,
-                t_eval = np.linspace(0, tmax, int(tmax*fmax*30) ),    # points of orbit at highest frequency
+                t_eval = np.linspace(0, tmax, int(tmax**2*arot/2/np.pi*30) ),    # points of orbit at highest frequency
                 rtol=1e-6, atol=1e-6 )
 print(f"elapsed time: {time.time() - start_time} s")
 
@@ -68,6 +68,20 @@ print(f"elapsed time: {time.time() - start_time} s")
 #%% plot
 
 plt.close('all')
+
+
+# eigenvalues
+# plt.figure()
+# W = np.linalg.eig(A)[0]
+# plt.plot( W.real, W.imag/2/np.pi, 'x' )
+# plt.title("eigenvalues")
+# plt.xlabel("Re")
+# plt.ylabel("Im")
+# plt.axis('equal')
+# plt.grid()
+# plt.tight_layout()
+# plt.show()
+
 
 plt.figure()
 
