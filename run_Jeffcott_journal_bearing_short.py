@@ -14,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.linalg    import block_diag
+from numba import njit
 
 import time
 
@@ -40,10 +41,11 @@ arot = 2*np.pi*fmax/tmax    # acceleration of rotor speed / rad/s**2 (reach fmax
 # -----------------------------------------------------------------------------
 # rotor ODE
 
+@njit
 def rotor_Jeffcott(t, q):
     # bearing state vector
     qB = np.zeros(6, dtype=np.float64)
-    qB[0:4] = q[[0,2,4,6]]
+    qB[0:4] = [q[0], q[2], q[4], q[6]]
     qB[4]   = arot*t
     # external forces
     FB   = rd.bearing_journal_short(qB,BB,DB,CB,eta)        # bearing forces & torque
@@ -102,7 +104,7 @@ plt.xlabel("x/C")
 plt.ylabel("y/C")
 plt.grid()
 
-# displacement disc
+# deflection disc
 plt.subplot(223)
 plt.plot(res.t, np.sqrt(res.y[1]**2+res.y[3]**2)*1e3, color='gold' )
 plt.title("deflection disc")

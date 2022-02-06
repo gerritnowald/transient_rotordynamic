@@ -24,8 +24,8 @@ g = 9.81    # gravitational acceleration
 # -----------------------------------------------------------------------------
 # parameters
 
-m   = 5         # mass of rotor / kg
-mj  = 1e-2         # journal mass / kg
+m   = 3         # mass of rotor / kg
+mj  = 1e-2      # journal mass / kg
 eps = m*1e-5    # center of mass eccentricity / m (unbalance)
 cs  = 1e7       # shaft stiffness / N/m
 d   = 1e-2*np.sqrt(cs*m)     # shaft damping coefficient / Ns/m (modal damping)
@@ -44,7 +44,7 @@ mf  = 80e-3     # floating ring mass / kg
 jf  = 20e-6     # floating ring moment of intertia / kgm^2
 
 tmax = 10           # max. time of calculation / s
-arot = 2*np.pi*100  # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
+arot = 2*np.pi*200  # acceleration of rotor speed / rad/s**2 (reach fmax in tmax)
 
 # -----------------------------------------------------------------------------
 # rotor ODE
@@ -92,8 +92,26 @@ plt.close('all')
 
 plt.figure()
 
-# eccentricity over time
+# deflection disc
 plt.subplot(221)
+plt.plot(res.t, (res.y[1]**2+res.y[3]**2)*1e3 )
+plt.legend()
+plt.title("deflection disc")
+plt.xlabel("time / s")
+plt.ylabel("r / mm")
+plt.grid()
+
+# spectogram
+plt.subplot(222)
+plt.specgram(res.y[3], Fs=len(res.y[3])/max(res.t), detrend='mean',
+              NFFT=512, pad_to=4096, noverlap=256 )
+plt.ylim((0, arot*max(res.t)/(2*np.pi) ))
+plt.title("spectogram disc")
+plt.xlabel("time / s")
+plt.ylabel("frequency / Hz")
+
+# eccentricity over time
+plt.subplot(223)
 plt.plot(res.t, np.sqrt((res.y[0]-res.y[4])**2+(res.y[2]-res.y[5])**2)/CBi, label='inner' )
 plt.plot(res.t, np.sqrt(           res.y[4]**2+           res.y[5]**2)/CBo, label='outer' )
 plt.legend()
@@ -104,31 +122,12 @@ plt.ylim((0, 1))
 plt.grid()
 
 # relative floating ring speed
-plt.subplot(222)
+plt.subplot(224)
 plt.plot(res.t, res.y[6]/arot/res.t )
 plt.title("relative floating ring speed")
 plt.xlabel("time / s")
 plt.ylabel("omf/omj")
 plt.grid()
-
-# displacement disc
-plt.subplot(223)
-plt.plot(res.t, res.y[1]*1e3, label='horiz.' )
-plt.plot(res.t, res.y[3]*1e3, label='vert.' )
-plt.legend()
-plt.title("displacement disc")
-plt.xlabel("time / s")
-plt.ylabel("x, y / mm")
-plt.grid()
-
-# spectogram
-plt.subplot(224)
-plt.specgram(res.y[3], Fs=len(res.y[3])/max(res.t), detrend='mean',
-              NFFT=512, pad_to=4096, noverlap=256 )
-plt.ylim((0, arot*max(res.t)/(2*np.pi) ))
-plt.title("spectogram disc")
-plt.xlabel("time / s")
-plt.ylabel("frequency / Hz")
 
 plt.tight_layout()
 plt.show()
