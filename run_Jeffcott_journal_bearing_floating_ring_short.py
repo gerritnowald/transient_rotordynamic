@@ -53,7 +53,7 @@ def rotor_Jeffcott(t, q):
     qBi  = np.hstack(( q[0]-q[4], q[2]-q[5], q[7]-q[11], q[9]-q[12], arot*t, q[6] ))    # bearing state vector
     qBo  = np.hstack(( q[4], q[5], q[11], q[12], q[6], 0 )) # bearing state vector
 	# external forces
-	FBi  = rd.bearing_journal_short(qBi,BBi,DBi,CBi,etai)   # inner bearing forces & torque
+    FBi  = rd.bearing_journal_short(qBi,BBi,DBi,CBi,etai)   # inner bearing forces & torque
     FBo  = rd.bearing_journal_short(qBo,BBo,DBo,CBo,etao)   # outer bearing forces & torque
     FU   = rd.unbalance_const_acc(t,eps,arot)               # unbalance forces
 	# ode in state space formulation
