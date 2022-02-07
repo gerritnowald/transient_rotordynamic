@@ -76,10 +76,11 @@ def bearing_journal_short(qB,B,D,C,eta):
     # dimensionless bearing forces
     fb = (B/D)**2*short_bearing_forces(eps,epsS,phiS)
     # dimensional forces transformed into absolute coordinates
-    FB = 0.25*D**3*B*eta/C**2*omega0*np.array([
+    F = np.empty(3, dtype=np.float64)
+    F[0:2] = 0.25*D**3*B*eta/C**2*omega0*np.array([
         [ cos_delta, -sin_delta ],
         [ sin_delta,  cos_delta ]
         ]) @ fb
     # bearing torque
-    MB = - eta*np.pi*B*D**3/C/4*(qB[4]-qB[5])/np.sqrt(1-eps**2)
-    return np.hstack((FB, MB))
+    F[2] = - eta*np.pi*B*D**3/C/4*(qB[4]-qB[5])/np.sqrt(1-eps**2)
+    return F
