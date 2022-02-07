@@ -15,6 +15,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.linalg    import block_diag
+from numba import njit
 
 import time
 
@@ -48,15 +49,16 @@ arot = 2*np.pi*200  # acceleration of rotor speed / rad/s**2 (reach fmax in tmax
 # -----------------------------------------------------------------------------
 # rotor ODE
 
+@njit
 def rotor_Jeffcott(t, q):
-	# bearing state vectors
+    # bearing state vectors
     qBi  = np.array([ q[0]-q[4], q[2]-q[5], q[7]-q[11], q[9]-q[12], arot*t, q[6] ])
     qBo  = np.array([ q[4], q[5], q[11], q[12], q[6], 0 ])
-	# external forces
+    # external forces
     FBi  = rd.bearing_journal_short(qBi,BBi,DBi,CBi,etai)   # inner bearing forces & torque
     FBo  = rd.bearing_journal_short(qBo,BBo,DBo,CBo,etao)   # outer bearing forces & torque
     FU   = rd.unbalance_const_acc(t,eps,arot)               # unbalance forces
-	# ode in state space formulation
+    # ode in state space formulation
     Fvec = np.array([ 2*FBi[0], FU[0], 2*FBi[1], FU[1], 2*(FBo[0]-FBi[0]), 2*(FBo[1]-FBi[1]), 2*(FBo[2]-FBi[2]) ])   # external forces physical space
     qd      = A @ q - gvec
     qd[7:] += Minv @ Fvec   # adding external forces
@@ -71,7 +73,7 @@ O = np.array([[1,-1], [-1,1]])
 D = block_diag(  d*O,  d*O, np.zeros((3,3)) )
 C = block_diag( cs*O, cs*O, np.zeros((3,3)) )
 
-A, Minv = rd.state_space(M,D,C)                                       # state space matrix
+A, Minv = rd.state_space(M,D,C)    # state space matrix
 gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1,0,1,0 ))    # gravity state space
 
 # -----------------------------------------------------------------------------
@@ -79,8 +81,8 @@ gvec    = g*np.hstack(( np.zeros(np.shape(M)[0]), 0,0,1,1,0,1,0 ))    # gravity 
 
 start_time = time.time()
 res = solve_ivp(rotor_Jeffcott, [0, tmax], np.zeros(np.shape(A)[0]) + 1e-10,
-				t_eval = np.linspace(0, tmax, int(tmax**2*arot/2/np.pi*30) ),    # points of orbit at highest frequency
-                rtol=1e-6, atol=1e-6, method='BDF' )
+                t_eval = np.linspace(0, tmax, int(tmax**2*arot/2/np.pi*30) ),    # points of orbit at highest frequency
+                rtol=1e-6, atol=1e-6, method='LSODA' )
 print(f"elapsed time: {time.time() - start_time} s")
 
 # -----------------------------------------------------------------------------
@@ -93,6 +95,7 @@ plt.figure()
 # deflection disc
 plt.subplot(221)
 plt.plot(res.t, (res.y[1]**2+res.y[3]**2)*1e3 )
+plt.legend()
 plt.title("deflection disc")
 plt.xlabel("time / s")
 plt.ylabel("r / mm")
