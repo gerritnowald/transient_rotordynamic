@@ -95,7 +95,6 @@ plt.figure()
 # deflection disc
 plt.subplot(221)
 plt.plot(res.t, (res.y[1]**2+res.y[3]**2)*1e3 )
-plt.legend()
 plt.title("deflection disc")
 plt.xlabel("time / s")
 plt.ylabel("r / mm")
