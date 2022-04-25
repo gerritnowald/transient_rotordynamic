@@ -1,5 +1,5 @@
 # transient_rotordynamic
-Simulation of an elastic (Jeffcott/Laval) rotor in journal bearings (analytical short bearing solution) and linear elastic bearings.
+Simulation of an elastic (Jeffcott/Laval) rotor in fixed and journal bearings (analytical short bearing solution).
 
 Details of the dynamic behavior can be found in this blog post: https://gerritnowald.wordpress.com/2022/02/05/simulating-vibration-of-rotors-with-python/
 
